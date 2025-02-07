@@ -54,17 +54,43 @@ const EquipmentPanel = ({ player }) => {
     borderRadius: '4px'
   };
 
+  // Debug log to see what's in the equipment object
+  console.log('Equipment:', player.equipment);
+
+  // Filter and standardize equipment slots to show
+  const equipmentSlots = {
+    mainHand: player.equipment.mainHand || player.equipment.mainhand,
+    offHand: player.equipment.offHand || player.equipment.offhand,
+    head: player.equipment.helmet || player.equipment.Helmet,
+    chest: player.equipment.chest || player.equipment.Chest,
+    feet: player.equipment.boots || player.equipment.Boots,
+    hands: player.equipment.gloves || player.equipment.Gloves,
+    tool: player.equipment.tool || player.equipment.Tool
+  };
+
+  // Debug log to see what slots we're displaying
+  console.log('Equipment Slots:', equipmentSlots);
+
   return (
     <div style={containerStyle}>
       <div style={sectionStyle}>
         <h2>Equipment</h2>
         <div style={gridStyle}>
-          {Object.entries(player.equipment).map(([slot, item]) => (
-            <div key={slot} style={slotStyle}>
-              <div style={labelStyle}>{slot}</div>
-              <div style={valueStyle}>{item?.name || '-'}</div>
-            </div>
-          ))}
+          {Object.entries(equipmentSlots).map(([slot, item]) => {
+            // Debug log for each slot
+            console.log(`Slot ${slot}:`, item);
+            
+            return (
+              <div key={slot} style={slotStyle}>
+                <div style={labelStyle}>
+                  {slot.replace(/([A-Z])/g, ' $1').toLowerCase().trim()}
+                </div>
+                <div style={valueStyle}>
+                  {item ? item.name : '-'}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
