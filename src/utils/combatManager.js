@@ -43,10 +43,9 @@ export class CombatManager {
       
       if (isDead) {
         this.handleEnemyDeath(enemy, setInCombat, setCombatEnemy);
-        return; // Exit immediately if enemy is dead
+        return;
       }
       
-      // Only proceed with attack counter and enemy turn if enemy is still alive
       setAttackCount(prev => {
         const newCount = prev + 1;
         if (newCount >= ATTACKS_FOR_LIMIT) {
@@ -57,19 +56,17 @@ export class CombatManager {
       });
       
       setCombatTurn('enemy');
-      // Automatically trigger enemy turn after a short delay
-      setTimeout(() => {
-        // Enemy's turn
-        const damage = enemy.attack;
-        player.currentHp -= damage;
-        this.addFeedbackMessage(`${enemy.name} attacks! -${damage} HP`, 'damage');
-        
-        if (player.currentHp <= 0) {
-          handlePlayerDeath();
-        } else {
-          setCombatTurn('player');
-        }
-      }, 500);
+    } else if (combatTurn === 'enemy') {
+      // Enemy's turn
+      const damage = enemy.attack;
+      player.currentHp -= damage;
+      this.addFeedbackMessage(`${enemy.name} attacks! -${damage} HP`, 'damage');
+      
+      if (player.currentHp <= 0) {
+        handlePlayerDeath();
+      } else {
+        setCombatTurn('player');
+      }
     }
   }
 
@@ -163,6 +160,15 @@ export class CombatManager {
           handlePlayerDeath();
         }
       }
+    }
+  }
+
+  checkEnemyCollision(player, enemy, setInCombat, setCombatEnemy, setCombatTurn) {
+    if (enemy.x === player.x && enemy.y === player.y) {
+      this.addFeedbackMessage(`${enemy.name} attacks you!`, 'damage');
+      setInCombat(true);
+      setCombatEnemy(enemy);
+      setCombatTurn('enemy'); // Combat starts with enemy turn since they initiated
     }
   }
 } 
