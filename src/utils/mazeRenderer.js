@@ -87,71 +87,115 @@ const drawMazeElements = (ctx, maze, cellSize, currentTime, player, enemies = []
         // If it's an ore, add ore overlay
         const ore = Object.values(OreTypes).find(o => o.id === cell);
         if (ore) {
-          // Draw ore pattern
-          ctx.fillStyle = ore.color;
-          
-          // Create a more crystalline pattern
-          const centerX = x * cellSize + cellSize / 2;
-          const centerY = y * cellSize + cellSize / 2;
-          const radius = cellSize * 0.3;
-          
-          // Draw main crystal shape
-          ctx.beginPath();
-          for (let i = 0; i < 6; i++) {
-            const angle = (i * Math.PI * 2) / 6;
-            const wobble = Math.sin(currentTime / 1000 + i) * 2;
-            const pointX = centerX + (radius + wobble) * Math.cos(angle);
-            const pointY = centerY + (radius + wobble) * Math.sin(angle);
+          if (ore.isTree) {
+            // Draw tree trunk
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(
+              x * cellSize + cellSize * 0.4,
+              y * cellSize + cellSize * 0.5,
+              cellSize * 0.2,
+              cellSize * 0.5
+            );
+
+            // Draw tree leaves
+            ctx.fillStyle = '#228B22';
+            ctx.beginPath();
+            ctx.moveTo(x * cellSize + cellSize * 0.2, y * cellSize + cellSize * 0.5);
+            ctx.lineTo(x * cellSize + cellSize * 0.8, y * cellSize + cellSize * 0.5);
+            ctx.lineTo(x * cellSize + cellSize * 0.5, y * cellSize);
+            ctx.closePath();
+            ctx.fill();
+
+            // Add a second layer of leaves
+            ctx.beginPath();
+            ctx.moveTo(x * cellSize + cellSize * 0.25, y * cellSize + cellSize * 0.3);
+            ctx.lineTo(x * cellSize + cellSize * 0.75, y * cellSize + cellSize * 0.3);
+            ctx.lineTo(x * cellSize + cellSize * 0.5, y * cellSize - cellSize * 0.1);
+            ctx.closePath();
+            ctx.fill();
+
+            // Add some detail to the leaves
+            ctx.fillStyle = '#1B691B';
+            for (let i = 0; i < 3; i++) {
+              const angle = (currentTime / 1000 + i * Math.PI * 2 / 3);
+              const radius = cellSize * 0.1;
+              ctx.beginPath();
+              ctx.arc(
+                x * cellSize + cellSize * 0.5 + Math.cos(angle) * radius,
+                y * cellSize + cellSize * 0.25 + Math.sin(angle) * radius,
+                2,
+                0,
+                Math.PI * 2
+              );
+              ctx.fill();
+            }
+          } else {
+            // Original ore rendering code
+            ctx.fillStyle = ore.color;
             
-            if (i === 0) {
-              ctx.moveTo(pointX, pointY);
-            } else {
+            // Create a more crystalline pattern
+            const centerX = x * cellSize + cellSize / 2;
+            const centerY = y * cellSize + cellSize / 2;
+            const radius = cellSize * 0.3;
+            
+            // Draw main crystal shape
+            ctx.beginPath();
+            for (let i = 0; i < 6; i++) {
+              const angle = (i * Math.PI * 2) / 6;
+              const wobble = Math.sin(currentTime / 1000 + i) * 2;
+              const pointX = centerX + (radius + wobble) * Math.cos(angle);
+              const pointY = centerY + (radius + wobble) * Math.sin(angle);
+              
+              if (i === 0) {
+                ctx.moveTo(pointX, pointY);
+              } else {
+                ctx.lineTo(pointX, pointY);
+              }
+            }
+            ctx.closePath();
+            ctx.fill();
+            
+            // Add inner details
+            ctx.fillStyle = `${ore.color}88`; // Semi-transparent
+            ctx.beginPath();
+            for (let i = 0; i < 3; i++) {
+              const angle = (i * Math.PI * 2) / 3 + currentTime / 2000;
+              const innerRadius = radius * 0.5;
+              const pointX = centerX + innerRadius * Math.cos(angle);
+              const pointY = centerY + innerRadius * Math.sin(angle);
+              
+              ctx.moveTo(centerX, centerY);
               ctx.lineTo(pointX, pointY);
             }
-          }
-          ctx.closePath();
-          ctx.fill();
-          
-          // Add inner details
-          ctx.fillStyle = `${ore.color}88`; // Semi-transparent
-          ctx.beginPath();
-          for (let i = 0; i < 3; i++) {
-            const angle = (i * Math.PI * 2) / 3 + currentTime / 2000;
-            const innerRadius = radius * 0.5;
-            const pointX = centerX + innerRadius * Math.cos(angle);
-            const pointY = centerY + innerRadius * Math.sin(angle);
+            ctx.stroke();
             
-            ctx.moveTo(centerX, centerY);
-            ctx.lineTo(pointX, pointY);
-          }
-          ctx.stroke();
-          
-          // Add sparkle effect for precious ores
-          if (ore === OreTypes.GOLD || ore === OreTypes.DIAMOND) {
-            const sparkleOpacity = Math.sin(currentTime / 300) * 0.3 + 0.7;
-            ctx.fillStyle = `rgba(255, 255, 255, ${sparkleOpacity})`;
-            
-            // Multiple sparkle points
-            for (let i = 0; i < 3; i++) {
-              const sparkleAngle = currentTime / 1000 + (i * Math.PI * 2) / 3;
-              const sparkleX = centerX + radius * 0.6 * Math.cos(sparkleAngle);
-              const sparkleY = centerY + radius * 0.6 * Math.sin(sparkleAngle);
+            // Add sparkle effect for precious ores
+            if (ore === OreTypes.GOLD || ore === OreTypes.DIAMOND) {
+              const sparkleOpacity = Math.sin(currentTime / 300) * 0.3 + 0.7;
+              ctx.fillStyle = `rgba(255, 255, 255, ${sparkleOpacity})`;
               
-              ctx.beginPath();
-              for (let j = 0; j < 4; j++) {
-                const starAngle = (j * Math.PI * 2) / 4 + currentTime / 1000;
-                const starRadius = (j % 2 === 0) ? cellSize * 0.1 : cellSize * 0.05;
-                const starX = sparkleX + starRadius * Math.cos(starAngle);
-                const starY = sparkleY + starRadius * Math.sin(starAngle);
+              // Multiple sparkle points
+              for (let i = 0; i < 3; i++) {
+                const sparkleAngle = currentTime / 1000 + (i * Math.PI * 2) / 3;
+                const sparkleX = centerX + radius * 0.6 * Math.cos(sparkleAngle);
+                const sparkleY = centerY + radius * 0.6 * Math.sin(sparkleAngle);
                 
-                if (j === 0) {
-                  ctx.moveTo(starX, starY);
-                } else {
-                  ctx.lineTo(starX, starY);
+                ctx.beginPath();
+                for (let j = 0; j < 4; j++) {
+                  const starAngle = (j * Math.PI * 2) / 4 + currentTime / 1000;
+                  const starRadius = (j % 2 === 0) ? cellSize * 0.1 : cellSize * 0.05;
+                  const starX = sparkleX + starRadius * Math.cos(starAngle);
+                  const starY = sparkleY + starRadius * Math.sin(starAngle);
+                  
+                  if (j === 0) {
+                    ctx.moveTo(starX, starY);
+                  } else {
+                    ctx.lineTo(starX, starY);
+                  }
                 }
+                ctx.closePath();
+                ctx.fill();
               }
-              ctx.closePath();
-              ctx.fill();
             }
           }
         }

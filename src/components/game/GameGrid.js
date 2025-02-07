@@ -17,6 +17,7 @@ import playerImage from '../../assets/images/player/player.png';
 import { TimePressureProvider, useTimePressure } from '../../contexts/TimePressureContext';
 import DangerMeter from './DangerMeter';
 import { enemySpawner, useEnemySpawner } from '../../utils/enemySpawner';
+import BasePanel from './BasePanel';
 
 const GameGrid = () => {
   const [maze, setMaze] = useState(null);
@@ -42,6 +43,13 @@ const GameGrid = () => {
   const [isBagOpen, setIsBagOpen] = useState(false);
   const [isCraftingOpen, setIsCraftingOpen] = useState(false);
   const [isTechTreeOpen, setIsTechTreeOpen] = useState(false);
+  const [isBaseOpen, setIsBaseOpen] = useState(false);
+  const [baseInventory, setBaseInventory] = useState({
+    ores: {},      // Store ore quantities
+    equipment: [], // Store equipment items
+    resources: {}  // Store processed resources
+  });
+  const [baseLayout, setBaseLayout] = useState(null);
   const canvasRef = useRef(null);
   const movePlayerRef = useRef(null);
   const { timeRemaining, resetTime, pauseTime, resumeTime } = useTimePressure();
@@ -586,6 +594,95 @@ const GameGrid = () => {
   const hasAvailableRecipes = player && getAvailableRecipes(player.inventory, player)
     .some(recipe => recipe.status?.canCraft);
 
+  // Add near other button handlers
+  const handleBaseStorage = (itemType, item) => {
+    setBaseInventory(prev => {
+      const newInventory = { ...prev };
+      
+      switch (itemType) {
+        case 'ore':
+          // Store ores
+          newInventory.ores[item.name] = (newInventory.ores[item.name] || 0) + 1;
+          
+          // Remove from player inventory
+          setPlayer(prevPlayer => {
+            const newPlayer = new Player(prevPlayer.x, prevPlayer.y);
+            Object.assign(newPlayer, { ...prevPlayer });
+            newPlayer.inventory[item.name]--;
+            return newPlayer;
+          });
+          break;
+
+        case 'equipment':
+          // Store equipment
+          newInventory.equipment.push(item);
+          
+          // Remove from player bag
+          setPlayer(prevPlayer => {
+            const newPlayer = new Player(prevPlayer.x, prevPlayer.y);
+            Object.assign(newPlayer, { ...prevPlayer });
+            newPlayer.bag = newPlayer.bag.filter(bagItem => bagItem !== item);
+            return newPlayer;
+          });
+          break;
+
+        default:
+          break;
+      }
+      
+      return newInventory;
+    });
+    
+    addFeedbackMessage(`Stored ${item.name} in base`, 'collect');
+  };
+
+  const handleRetrieveFromBase = (itemType, item) => {
+    setBaseInventory(prev => {
+      const newInventory = { ...prev };
+      
+      switch (itemType) {
+        case 'ore':
+          // Remove ore from base
+          newInventory.ores[item.name]--;
+          if (newInventory.ores[item.name] <= 0) {
+            delete newInventory.ores[item.name];
+          }
+          
+          // Add to player inventory
+          setPlayer(prevPlayer => {
+            const newPlayer = new Player(prevPlayer.x, prevPlayer.y);
+            Object.assign(newPlayer, { ...prevPlayer });
+            newPlayer.inventory[item.name] = (newPlayer.inventory[item.name] || 0) + 1;
+            return newPlayer;
+          });
+          break;
+
+        case 'equipment':
+          // Remove equipment from base
+          newInventory.equipment = newInventory.equipment.filter(e => e !== item);
+          
+          // Add to player bag if there's space
+          setPlayer(prevPlayer => {
+            const newPlayer = new Player(prevPlayer.x, prevPlayer.y);
+            Object.assign(newPlayer, { ...prevPlayer });
+            if (newPlayer.bag.length < newPlayer.bagSize) {
+              newPlayer.bag.push(item);
+              addFeedbackMessage(`Retrieved ${item.name} from base`, 'collect');
+            } else {
+              addFeedbackMessage('Bag is full!', 'warning');
+            }
+            return newPlayer;
+          });
+          break;
+
+        default:
+          break;
+      }
+      
+      return newInventory;
+    });
+  };
+
   return (
     <div style={{ 
       display: 'flex', 
@@ -728,6 +825,21 @@ const GameGrid = () => {
               }}>
                 ({player?.techPoints || 0})
               </span>
+            </button>
+            <button
+              onClick={() => setIsBaseOpen(!isBaseOpen)}
+              style={{
+                background: isBaseOpen ? '#30475e' : 'rgba(20, 20, 30, 0.9)',
+                border: `2px solid ${isBaseOpen ? '#4a6b8f' : '#30475e'}`,
+                color: 'white',
+                padding: '10px 20px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              Base
             </button>
           </div>
         </div>
@@ -965,6 +1077,18 @@ const GameGrid = () => {
           <TechTree 
             player={player} 
             onClose={() => setIsTechTreeOpen(false)}
+          />
+        )}
+
+        {isBaseOpen && (
+          <BasePanel
+            baseInventory={baseInventory}
+            onStore={handleBaseStorage}
+            onRetrieve={handleRetrieveFromBase}
+            player={player}
+            onClose={() => setIsBaseOpen(false)}
+            baseLayout={baseLayout}
+            setBaseLayout={setBaseLayout}
           />
         )}
       </div>
