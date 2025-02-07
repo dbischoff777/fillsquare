@@ -13,14 +13,16 @@ const DangerMeter = () => {
   };
 
   const getDangerColor = () => {
+    if (timeRemaining <= 60) return '#ff0000';  // Bright red for critical phase
     switch (dangerLevel) {
-      case 2: return '#ff0000';
-      case 1: return '#ff9900';
-      default: return '#00ff00';
+      case 2: return '#ff3333';  // Slightly softer red
+      case 1: return '#ff9900';  // Orange for warning
+      default: return '#00ff00'; // Green for normal
     }
   };
 
   const getPulseAnimation = () => {
+    if (timeRemaining <= 60) return 'criticalPulse 0.5s infinite';
     if (dangerLevel === 2) return 'pulse 0.5s infinite';
     if (dangerLevel === 1) return 'pulse 1s infinite';
     return 'none';
@@ -134,12 +136,18 @@ const DangerMeter = () => {
   );
 };
 
-// Add the pulse animation
+// Update the pulse animations
 const style = document.createElement('style');
 style.textContent = `
   @keyframes pulse {
     0% { transform: scale(1); }
     50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  
+  @keyframes criticalPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
     100% { transform: scale(1); }
   }
 `;
