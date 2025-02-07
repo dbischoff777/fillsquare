@@ -83,22 +83,6 @@ const drawTreasure = (ctx, x, y, cellSize, currentTime) => {
   }
 };
 
-const drawHealthBar = (ctx, x, y, cellSize, currentHp, maxHp) => {
-  const barWidth = cellSize * 0.8;
-  const barHeight = cellSize * 0.1;
-  const barX = x * cellSize + (cellSize - barWidth) / 2;
-  const barY = y * cellSize - barHeight - 2;
-
-  // Background
-  ctx.fillStyle = '#333';
-  ctx.fillRect(barX, barY, barWidth, barHeight);
-
-  // Health
-  const healthWidth = (currentHp / maxHp) * barWidth;
-  ctx.fillStyle = '#ff3333';
-  ctx.fillRect(barX, barY, healthWidth, barHeight);
-};
-
 const drawMazeElements = (ctx, maze, cellSize, currentTime, player, enemies = [], playerAngle = 0) => {
   // Draw base maze and walls
   maze.forEach((row, y) => {
@@ -236,46 +220,6 @@ const drawMazeElements = (ctx, maze, cellSize, currentTime, player, enemies = []
       ctx.fill();
     }
   }
-};
-
-const drawPlayer = (ctx, cellSize, currentTime, player, moveAnimation, lastMoveTime, playerAngle, setMoveAnimation) => {
-  let drawX = player.x;
-  let drawY = player.y;
-  
-  if (moveAnimation) {
-    const progress = (currentTime - moveAnimation.startTime) / moveAnimation.duration;
-    if (progress < 1) {
-      drawX = moveAnimation.startX + (moveAnimation.endX - moveAnimation.startX) * progress;
-      drawY = moveAnimation.startY + (moveAnimation.endY - moveAnimation.startY) * progress;
-    } else {
-      setMoveAnimation(null);
-    }
-  }
-
-  // Trail effect
-  const timeSinceMove = currentTime - lastMoveTime;
-  if (timeSinceMove < 200) {
-    ctx.fillStyle = `rgba(70, 130, 180, ${0.3 * (1 - timeSinceMove / 200)})`;
-    ctx.beginPath();
-    ctx.arc((drawX + 0.5) * cellSize, (drawY + 0.5) * cellSize, 
-            cellSize * 0.6, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // Player triangle
-  ctx.save();
-  ctx.translate((drawX + 0.5) * cellSize, (drawY + 0.5) * cellSize);
-  ctx.rotate(playerAngle * Math.PI / 180);
-  
-  ctx.fillStyle = '#f6c90e';
-  ctx.beginPath();
-  ctx.moveTo(cellSize * 0.4, 0);
-  ctx.lineTo(-cellSize * 0.2, -cellSize * 0.2);
-  ctx.lineTo(-cellSize * 0.2, cellSize * 0.2);
-  ctx.closePath();
-  ctx.fill();
-  
-  ctx.restore();
 };
 
 const drawDroppedItem = (ctx, x, y, cellSize) => {
