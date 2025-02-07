@@ -582,8 +582,8 @@ const GameGrid = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     
-    const mazeWidth = 31;  // Increased from 31
-    const mazeHeight = 31; // Increased from 31
+    const mazeWidth = 21;  // Increased from 31
+    const mazeHeight = 21; // Increased from 31
     const cellSize = 32;
     canvas.width = mazeWidth * cellSize;
     canvas.height = mazeHeight * cellSize;
