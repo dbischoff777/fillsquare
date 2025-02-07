@@ -850,78 +850,97 @@ const GameGrid = () => {
           </button>
         </div>
       )}
-      {inCombat && (
+      {/* Combat UI */}
+      {inCombat && combatEnemy && (
         <div style={{
-          position: 'fixed',
+          position: 'absolute',
           bottom: '20px',
           left: '50%',
           transform: 'translateX(-50%)',
-          backgroundColor: 'rgba(0,0,0,0.8)',
-          padding: '15px 25px',
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          padding: '15px',
           borderRadius: '8px',
           color: '#fff',
           textAlign: 'center',
           minWidth: '300px'
         }}>
-          <div style={{
-            display: 'flex',
+          <div style={{ 
+            display: 'flex', 
             justifyContent: 'space-between',
-            marginBottom: '15px',
-            padding: '10px',
-            backgroundColor: 'rgba(255,255,255,0.1)',
-            borderRadius: '4px'
+            alignItems: 'center',
+            marginBottom: '15px'
           }}>
-            {/* Enemy Stats */}
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ 
-                fontSize: '18px', 
-                fontWeight: 'bold',
-                color: combatEnemy?.color || '#fff'
+            {/* Enemy info with image */}
+            <div style={{ 
+              display: 'flex',
+              alignItems: 'center',
+              gap: '15px'
+            }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                border: '2px solid #666',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                backgroundColor: '#222'
               }}>
-                {combatEnemy?.name} (Level {combatEnemy?.level})
+                {combatEnemy.image ? (
+                  <img 
+                    src={combatEnemy.image.src} 
+                    alt={combatEnemy.name}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain'
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: combatEnemy.color
+                  }} />
+                )}
               </div>
-              <div style={{ 
-                marginTop: '5px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '3px'
-              }}>
+              <div style={{ textAlign: 'left' }}>
+                <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                  {combatEnemy.name}
+                </div>
                 <div>
-                  HP: {combatEnemy?.currentHp}/{combatEnemy?.maxHp}
+                  HP: {combatEnemy.currentHp}/{combatEnemy.maxHp}
                   <div style={{
                     width: '100px',
                     height: '8px',
                     backgroundColor: '#333',
                     borderRadius: '4px',
-                    overflow: 'hidden'
+                    overflow: 'hidden',
+                    marginTop: '4px'
                   }}>
                     <div style={{
-                      width: `${(combatEnemy?.currentHp / combatEnemy?.maxHp) * 100}%`,
+                      width: `${(combatEnemy.currentHp / combatEnemy.maxHp) * 100}%`,
                       height: '100%',
                       backgroundColor: '#ff4444',
                       transition: 'width 0.3s'
                     }}/>
                   </div>
                 </div>
-                <div>Attack: {combatEnemy?.attack}</div>
               </div>
             </div>
 
-            {/* Player Stats */}
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ 
-                fontSize: '18px', 
-                fontWeight: 'bold' 
-              }}>
-                Player (Level {player?.level})
-              </div>
-              <div style={{ 
-                marginTop: '5px',
+            {/* Player info */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '15px'
+            }}>
+              <div style={{
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '3px',
                 alignItems: 'flex-end'
               }}>
+                <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                  Player
+                </div>
                 <div>
                   HP: {player?.currentHp}/{player?.maxHp}
                   <div style={{
@@ -941,6 +960,32 @@ const GameGrid = () => {
                 </div>
                 <div>Attack: {player?.attack}</div>
               </div>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                border: '2px solid #666',
+                borderRadius: '8px',
+                overflow: 'hidden',
+                backgroundColor: '#222'
+              }}>
+                {player?.image ? (
+                  <img 
+                    src={player.image} 
+                    alt="Player"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'contain'
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    width: '100%',
+                    height: '100%',
+                    backgroundColor: '#4444ff'
+                  }} />
+                )}
+              </div>
             </div>
           </div>
 
@@ -950,6 +995,7 @@ const GameGrid = () => {
               'Enemy turn...'}
           </div>
 
+          {/* Combat buttons */}
           {combatTurn === 'player' && (
             <div style={{ 
               display: 'flex', 

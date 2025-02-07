@@ -1,3 +1,7 @@
+// Import only the rat image for now
+import ratImage from '../assets/images/enemies/rat.png';
+import spiderImage from '../assets/images/enemies/rat.png';
+
 export const EnemyTypes = {
   RAT: {
     name: 'Rat',
@@ -5,7 +9,8 @@ export const EnemyTypes = {
     baseAttack: 1,
     color: '#8B4513',
     minLevel: 1,
-    spawnWeight: 100
+    spawnWeight: 100,
+    image: ratImage
   },
   SPIDER: {
     name: 'Spider',
@@ -13,7 +18,8 @@ export const EnemyTypes = {
     baseAttack: 2,
     color: '#4A0404',
     minLevel: 2,
-    spawnWeight: 80
+    spawnWeight: 80,
+    image: spiderImage
   },
   SKELETON: {
     name: 'Skeleton',
@@ -21,7 +27,8 @@ export const EnemyTypes = {
     baseAttack: 4,
     color: '#E0E0E0',
     minLevel: 3,
-    spawnWeight: 60
+    spawnWeight: 60,
+    image: null
   },
   GOBLIN: {
     name: 'Goblin',
@@ -29,7 +36,8 @@ export const EnemyTypes = {
     baseAttack: 5,
     color: '#355E3B',
     minLevel: 4,
-    spawnWeight: 50
+    spawnWeight: 50,
+    image: null
   },
   ORC: {
     name: 'Orc',
@@ -37,7 +45,8 @@ export const EnemyTypes = {
     baseAttack: 6,
     color: '#006400',
     minLevel: 5,
-    spawnWeight: 40
+    spawnWeight: 40,
+    image: null
   },
   TROLL: {
     name: 'Troll',
@@ -45,7 +54,8 @@ export const EnemyTypes = {
     baseAttack: 7,
     color: '#808000',
     minLevel: 5,
-    spawnWeight: 30
+    spawnWeight: 30,
+    image: null
   },
   DEMON: {
     name: 'Demon',
@@ -53,7 +63,8 @@ export const EnemyTypes = {
     baseAttack: 8,
     color: '#8B0000',
     minLevel: 6,
-    spawnWeight: 20
+    spawnWeight: 20,
+    image: null
   },
   DRAGON: {
     name: 'Dragon',
@@ -61,9 +72,41 @@ export const EnemyTypes = {
     baseAttack: 10,
     color: '#FF4500',
     minLevel: 8,
-    spawnWeight: 10
+    spawnWeight: 10,
+    image: null
   }
 };
+
+// Create an image cache with error handling
+const enemyImages = {};
+
+// Helper function to load image with error handling
+const loadImage = (name, image) => {
+  if (!image) return Promise.resolve(); // Skip if no image provided
+  
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      enemyImages[name] = img;
+      console.log(`Loaded image for ${name}`);
+      resolve();
+    };
+    img.onerror = () => {
+      console.warn(`Failed to load image for ${name}, using fallback`);
+      enemyImages[name] = null;
+      resolve();
+    };
+    img.src = image;
+  });
+};
+
+// Preload all enemy images
+Object.values(EnemyTypes).forEach(type => {
+  if (type.image) {
+    loadImage(type.name, type.image)
+      .catch(error => console.error(`Error loading ${type.name} image:`, error));
+  }
+});
 
 export class Enemy {
   constructor(x, y, type, playerLevel = 1) {
@@ -74,10 +117,10 @@ export class Enemy {
     
     // More gradual scaling based on player level
     const levelDifference = playerLevel - this.type.minLevel;
-    const levelScale = Math.max(1, 1 + (levelDifference * 0.15)); // Reduced from 0.2 to 0.15
+    const levelScale = Math.max(1, 1 + (levelDifference * 0.15));
     
     // Cap the maximum scaling based on enemy type
-    const maxScale = 1.5 + (this.type.minLevel * 0.1); // Higher level enemies can scale more
+    const maxScale = 1.5 + (this.type.minLevel * 0.1);
     const finalScale = Math.min(levelScale, maxScale);
     
     // Calculate stats with balanced scaling
@@ -87,6 +130,7 @@ export class Enemy {
     this.name = this.type.name;
     this.color = this.type.color;
     this.level = playerLevel;
+    this.image = enemyImages[this.type.name];
   }
 
   static getRandomType(playerLevel) {
@@ -126,4 +170,7 @@ export class Enemy {
     this.currentHp = Math.max(0, this.currentHp - amount);
     return this.currentHp <= 0;
   }
-} 
+}
+
+// Export the image cache for use in renderer
+export const getEnemyImage = (enemyName) => enemyImages[enemyName]; 

@@ -1,4 +1,9 @@
 import { OreTypes } from './oreTypes';
+import playerImage from '../assets/images/player/player.png';
+
+// Create and load the player image
+const playerSprite = new Image();
+playerSprite.src = playerImage;
 
 export const drawMaze = (
   ctx, 
@@ -172,72 +177,48 @@ const drawMazeElements = (ctx, maze, cellSize, currentTime, player, enemies = []
     });
   });
 
-  // Draw enemies with pulsing effect
+  // Draw enemies
   enemies.forEach(enemy => {
-    const pulseAmount = Math.sin(currentTime / 300) * 0.2 + 0.8;
-    ctx.fillStyle = `${enemy.color}${Math.floor(pulseAmount * 255).toString(16).padStart(2, '0')}`;
+    const screenX = enemy.x * cellSize;
+    const screenY = enemy.y * cellSize;
     
-    // Draw enemy body
-    ctx.beginPath();
-    ctx.arc(
-      enemy.x * cellSize + cellSize / 2,
-      enemy.y * cellSize + cellSize / 2,
-      cellSize * 0.35,
-      0,
-      Math.PI * 2
-    );
-    ctx.fill();
-    
-    // Draw glow effect
-    ctx.fillStyle = `${enemy.color}4D`; // 30% opacity version of enemy color
-    ctx.beginPath();
-    ctx.arc(
-      enemy.x * cellSize + cellSize / 2,
-      enemy.y * cellSize + cellSize / 2,
-      cellSize * 0.45,
-      0,
-      Math.PI * 2
-    );
-    ctx.fill();
-
-    // Draw health bar if damaged
-    if (enemy.currentHp < enemy.maxHp) {
-      drawHealthBar(ctx, enemy.x, enemy.y, cellSize, enemy.currentHp, enemy.maxHp);
+    if (enemy.image && enemy.image.complete && enemy.image.naturalHeight !== 0) {
+      ctx.drawImage(
+        enemy.image,
+        screenX + 2,
+        screenY + 2,
+        cellSize - 4,
+        cellSize - 4
+      );
+    } else {
+      ctx.fillStyle = enemy.color;
+      ctx.fillRect(screenX + 2, screenY + 2, cellSize - 4, cellSize - 4);
     }
-
-    // Draw enemy name
-    ctx.fillStyle = '#fff';
-    ctx.font = '10px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText(
-      enemy.name,
-      enemy.x * cellSize + cellSize / 2,
-      enemy.y * cellSize - 5
-    );
   });
 
   // Draw player
   if (player) {
-    ctx.save();
-    ctx.translate(
-      player.x * cellSize + cellSize / 2,
-      player.y * cellSize + cellSize / 2
-    );
-    ctx.rotate((playerAngle * Math.PI) / 180);
-    
-    // Player body
-    ctx.fillStyle = '#4CAF50';
-    ctx.beginPath();
-    ctx.arc(0, 0, cellSize * 0.35, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Player direction indicator
-    ctx.fillStyle = '#2E7D32';
-    ctx.beginPath();
-    ctx.arc(cellSize * 0.2, 0, cellSize * 0.15, 0, Math.PI * 2);
-    ctx.fill();
-    
-    ctx.restore();
+    const screenX = player.x * cellSize;
+    const screenY = player.y * cellSize;
+
+    if (playerSprite.complete) {
+      ctx.drawImage(
+        playerSprite,
+        screenX + 2,
+        screenY + 2,
+        cellSize - 4,
+        cellSize - 4
+      );
+    } else {
+      // Fallback to triangle if image not loaded
+      ctx.fillStyle = '#4444ff';
+      ctx.beginPath();
+      ctx.moveTo(screenX + cellSize/2, screenY + 4);
+      ctx.lineTo(screenX + cellSize - 4, screenY + cellSize - 4);
+      ctx.lineTo(screenX + 4, screenY + cellSize - 4);
+      ctx.closePath();
+      ctx.fill();
+    }
   }
 };
 

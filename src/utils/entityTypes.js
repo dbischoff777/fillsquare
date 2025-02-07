@@ -1,4 +1,5 @@
 import { EquipmentSlot, EQUIPMENT_LIST } from './equipmentTypes';
+import playerImage from '../assets/images/player/player.png';
 
 export const EntityTypes = {
   WALL: 1,
@@ -32,7 +33,8 @@ export class Character extends Entity {
 
 export class Player extends Character {
   constructor(x, y) {
-    super(x, y, EntityTypes.PLAYER, 100, 25);
+    super(x, y, EntityTypes.PLAYER, 20, 2);
+    this.defense = 1;
     this.level = 1;
     this.experience = 0;
     this.experienceToNextLevel = 100;
@@ -62,6 +64,7 @@ export class Player extends Character {
     };
     this.bag = [];  // Array to store unequipped items
     this.bagSize = 10;  // Maximum number of items in bag
+    this.image = playerImage;
   }
 
   gainExperience(amount) {
