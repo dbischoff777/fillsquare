@@ -70,7 +70,7 @@ export class Player extends Character {
       tool: BASIC_PICKAXE  // Start with basic pickaxe equipped
     };
     this.bag = [];
-    this.bagSize = 10;
+    this.bagSize = 20;
     
     // Add tech-related properties
     this.techPoints = 0;
