@@ -1,15 +1,13 @@
+import React from 'react';
 import GameGrid from './components/game/GameGrid';
+import { TimePressureProvider } from './contexts/TimePressureContext';
 import './App.css';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-      </header>
-      <main className="App-main">
-        <GameGrid />
-      </main>
-    </div>
+    <TimePressureProvider>
+      <GameGrid />
+    </TimePressureProvider>
   );
 }
 

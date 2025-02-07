@@ -16,9 +16,8 @@ import { CombatManager } from '../../utils/combatManager';
 import { getAvailableRecipes } from '../../utils/craftingRecipes';
 import TechTree from './TechTree';
 import playerImage from '../../assets/images/player/player.png';
-
-const LEVEL_TIME_LIMIT = 300; // 5 minutes in seconds
-const WARNING_TIME = 60; // 1 minute in seconds
+import { TimePressureProvider, useTimePressure } from '../../contexts/TimePressureContext';
+import DangerMeter from './DangerMeter';
 
 const GameGrid = () => {
   const [maze, setMaze] = useState(null);
@@ -35,7 +34,6 @@ const GameGrid = () => {
   const [touchStart, setTouchStart] = useState(null);
   const [droppedItems, setDroppedItems] = useState(new Map());
   const [currentEnemy, setCurrentEnemy] = useState(null);
-  const [timeRemaining, setTimeRemaining] = useState(LEVEL_TIME_LIMIT);
   const [gameOverReason, setGameOverReason] = useState('');
   const [inCombat, setInCombat] = useState(false);
   const [combatEnemy, setCombatEnemy] = useState(null);
@@ -47,6 +45,7 @@ const GameGrid = () => {
   const [isTechTreeOpen, setIsTechTreeOpen] = useState(false);
   const canvasRef = useRef(null);
   const movePlayerRef = useRef(null);
+  const { timeRemaining, resetTime, pauseTime, resumeTime } = useTimePressure();
 
   const ATTACKS_FOR_LIMIT = 3; // Number of attacks needed for limit break
 
@@ -197,7 +196,7 @@ const GameGrid = () => {
 
   const handleContinue = () => {
     setShowLevelSummary(false);
-    setTimeRemaining(LEVEL_TIME_LIMIT);
+    resetTime();
     resetGame();
   };
 
@@ -608,50 +607,14 @@ const GameGrid = () => {
     setPlayer(initialPlayer);
   }, []); 
 
-  // Timer effect - completely independent from other game state
+  // Update the effects to pause/resume the timer
   useEffect(() => {
-    // Only stop timer on game over or level summary
     if (gameOver || showLevelSummary) {
-      return;
+      pauseTime();
+    } else {
+      resumeTime();
     }
-
-    const intervalId = setInterval(() => {
-      setTimeRemaining(prevTime => {
-        
-        if (prevTime <= 0) {
-          clearInterval(intervalId);
-          setGameOver(true);
-          setGameOverReason('time');
-          addFeedbackMessage('Time\'s up!', 'damage');
-          return 0;
-        }
-
-        // Warning messages for remaining minutes
-        if (prevTime % 60 === 0 && prevTime > 0) {
-          const minutesLeft = prevTime / 60;
-          const minuteText = minutesLeft === 1 ? 'minute' : 'minutes';
-          addFeedbackMessage(
-            `${minutesLeft} ${minuteText} remaining!`,
-            minutesLeft === 1 ? 'warning' : 'info'
-          );
-        }
-
-        return prevTime - 1;
-      });
-    }, 1000);
-
-    // Cleanup
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [gameOver, showLevelSummary]); // Only depend on game state that should stop the timer
-
-  // Format time for display
-  const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
+  }, [gameOver, showLevelSummary, pauseTime, resumeTime]);
 
   const handleTouchStart = (e) => {
     const touch = e.touches[0];
@@ -742,7 +705,7 @@ const GameGrid = () => {
         display: 'flex', 
         flexDirection: 'column', 
         alignItems: 'center',
-        position: 'relative'  // Add relative positioning to the container
+        position: 'relative'
       }}>
         <div style={{
           display: 'flex',
@@ -863,15 +826,6 @@ const GameGrid = () => {
                 ({player?.techPoints || 0})
               </span>
             </button>
-            <div style={{
-              color: timeRemaining <= WARNING_TIME ? '#ff4444' : '#fff',
-              fontSize: '24px',
-              fontWeight: 'bold',
-              textShadow: timeRemaining <= WARNING_TIME ? '0 0 10px rgba(255,0,0,0.5)' : 'none',
-              animation: timeRemaining <= WARNING_TIME ? 'pulse 1s infinite' : 'none'
-            }}>
-              {formatTime(timeRemaining)}
-            </div>
           </div>
         </div>
         
@@ -882,13 +836,28 @@ const GameGrid = () => {
             borderRadius: '8px',
             boxShadow: '0 4px 6px rgba(0, 0, 0, 0.2)',
             marginBottom: '10px',
-            position: 'relative'  // Add relative positioning to the canvas
+            position: 'relative'
           }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         />
 
-        {/* Combat UI - Moved inside the canvas container */}
+        {/* Move DangerMeter here, after the canvas */}
+        <div style={{
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'center',
+          marginTop: '10px',
+          marginBottom: '10px'
+        }}>
+          <DangerMeter />
+        </div>
+
+        <FeedbackBanner 
+          messages={feedbackMessages} 
+          currentEnemy={currentEnemy}
+        />
+
         {inCombat && combatEnemy && (
           <div style={{
             position: 'absolute',
@@ -1075,11 +1044,6 @@ const GameGrid = () => {
           </div>
         )}
 
-        <FeedbackBanner 
-          messages={feedbackMessages} 
-          currentEnemy={currentEnemy}
-        />
-
         {isBagOpen && player && (
           <BagPanel 
             player={player} 
@@ -1166,15 +1130,11 @@ const GameGrid = () => {
   );
 };
 
-// Add CSS animation for the timer warning
-const style = document.createElement('style');
-style.textContent = `
-  @keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-  }
-`;
-document.head.appendChild(style);
+// Wrap the export with TimePressureProvider
+const WrappedGameGrid = () => (
+  <TimePressureProvider>
+    <GameGrid />
+  </TimePressureProvider>
+);
 
-export default GameGrid;
+export default WrappedGameGrid;

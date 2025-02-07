@@ -190,4 +190,42 @@ export class Player extends Character {
 
     return true;
   }
+}
+
+export class Enemy {
+  constructor(x, y, level = 1) {
+    this.x = x;
+    this.y = y;
+    this.type = EntityTypes.ENEMY;
+    this.level = level;
+    this.baseSpeed = 1;
+    this.baseDamage = 10 + (level * 2);
+    this.maxHp = 20 + (level * 5);
+    this.currentHp = this.maxHp;
+    this.color = '#ff0000';
+  }
+
+  // Add method to apply difficulty multipliers
+  getAdjustedStats(multipliers) {
+    return {
+      damage: Math.floor(this.baseDamage * multipliers.enemyDamage),
+      speed: this.baseSpeed * multipliers.enemySpeed
+    };
+  }
+
+  // Modify move method to use adjusted speed
+  move(dx, dy, multipliers) {
+    const { speed } = this.getAdjustedStats(multipliers);
+    // Only move if random roll is less than adjusted speed
+    if (Math.random() < speed) {
+      this.x += dx;
+      this.y += dy;
+    }
+  }
+
+  // Modify damage calculation to use multipliers
+  calculateDamage(multipliers) {
+    const { damage } = this.getAdjustedStats(multipliers);
+    return damage;
+  }
 } 
