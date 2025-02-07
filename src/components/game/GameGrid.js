@@ -3,13 +3,11 @@ import { generateMaze, moveEnemies, handleEnemyDeath } from '../../utils/mazeUti
 import { drawMaze } from '../../utils/mazeRenderer';
 import { Player, Enemy, EntityTypes } from '../../utils/entityTypes';
 import { OreTypes } from '../../utils/oreTypes';
-import { handleCombat } from '../../utils/combatUtils';
 import PlayerStats from './PlayerStats';
 import LevelSummary from './LevelSummary';
 import FeedbackBanner from './FeedbackBanner';
 import { useEnemyMovement } from '../../hooks/useEnemyMovement';
 import EquipmentPanel from './EquipmentPanel';
-import { EQUIPMENT_LIST, EquipmentSlot } from '../../utils/equipmentTypes';
 import CraftingPanel from './CraftingPanel';
 import BagPanel from './BagPanel';
 import { CombatManager } from '../../utils/combatManager';
@@ -18,6 +16,7 @@ import TechTree from './TechTree';
 import playerImage from '../../assets/images/player/player.png';
 import { TimePressureProvider, useTimePressure } from '../../contexts/TimePressureContext';
 import DangerMeter from './DangerMeter';
+import { enemySpawner, useEnemySpawner } from '../../utils/enemySpawner';
 
 const GameGrid = () => {
   const [maze, setMaze] = useState(null);
@@ -46,6 +45,7 @@ const GameGrid = () => {
   const canvasRef = useRef(null);
   const movePlayerRef = useRef(null);
   const { timeRemaining, resetTime, pauseTime, resumeTime } = useTimePressure();
+  const { updateSpawner } = useEnemySpawner();
 
   const ATTACKS_FOR_LIMIT = 3; // Number of attacks needed for limit break
 
@@ -102,6 +102,10 @@ const GameGrid = () => {
     const { maze: newMaze, enemies: newEnemies } = generateMaze(MAZE_WIDTH, MAZE_HEIGHT, player?.level || 1);
     setMaze(newMaze);
     setEnemies(newEnemies);
+    
+    // Initialize enemy spawn points for new maze
+    enemySpawner.initializeSpawnPoints(newMaze);
+    
     setPlayer(prev => {
       const newPlayer = new Player(1, 1);
       Object.assign(newPlayer, {
@@ -153,6 +157,14 @@ const GameGrid = () => {
     let animationFrameId;
     
     const animate = () => {
+      const currentTime = performance.now();
+      
+      // Update spawner with time pressure context
+      updateSpawner(currentTime, player.level);
+
+      // Get combined enemies list (initial enemies + spawned enemies)
+      const allEnemies = [...enemies, ...enemySpawner.getEnemies()];
+      
       drawMaze(
         ctx, 
         maze, 
@@ -161,7 +173,7 @@ const GameGrid = () => {
         lastMoveTime, 
         playerAngle, 
         setMoveAnimation,
-        enemies,
+        allEnemies,  // Use combined enemies list
         droppedItems
       );
 
@@ -184,7 +196,7 @@ const GameGrid = () => {
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [maze, player, moveAnimation, lastMoveTime, playerAngle, enemies, droppedItems]);
+  }, [maze, player, moveAnimation, lastMoveTime, playerAngle, enemies, droppedItems, timeRemaining]);
 
   const compareEquipment = (newItem, currentItem) => {
     // Different slots should never be compared
@@ -476,6 +488,9 @@ const GameGrid = () => {
     const initialPlayer = new Player(1, 1);
     initialPlayer.currentHp = initialPlayer.maxHp;
     setPlayer(initialPlayer);
+
+    // Initialize enemy spawn points
+    enemySpawner.initializeSpawnPoints(newMaze);
   }, []); 
 
   // Update the effects to pause/resume the timer

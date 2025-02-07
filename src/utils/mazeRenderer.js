@@ -62,14 +62,6 @@ export const drawMaze = (
   });
 };
 
-const drawBackground = (ctx) => {
-  const gradient = ctx.createLinearGradient(0, 0, ctx.canvas.width, ctx.canvas.height);
-  gradient.addColorStop(0, '#1a1a2e');
-  gradient.addColorStop(1, '#16213e');
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-};
-
 const drawTreasure = (ctx, x, y, cellSize, currentTime) => {
   // Draw chest sprite only
   if (chestSprite.complete) {
@@ -243,21 +235,3 @@ const drawDroppedItem = (ctx, x, y, cellSize) => {
   ctx.fillStyle = '#f6c90e';
   ctx.fillRect(xPos, yPos, itemSize, itemSize);
 };
-
-const drawMiningEffect = (ctx, x, y, cellSize) => {
-  const particles = [];
-  const numParticles = 5;
-  
-  for (let i = 0; i < numParticles; i++) {
-    particles.push({
-      x: x * cellSize + cellSize / 2,
-      y: y * cellSize + cellSize / 2,
-      dx: (Math.random() - 0.5) * 2,
-      dy: (Math.random() - 0.5) * 2,
-      size: Math.random() * 3 + 1,
-      life: 1
-    });
-  }
-  
-  return particles;
-}; 

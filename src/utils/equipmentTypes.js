@@ -3,6 +3,7 @@ export const EquipmentSlot = {
   OFF_HAND: 'offHand',
   TOOL: 'tool',
   HELMET: 'helmet',
+  ARMOR: 'armor',
   BOOTS: 'boots',
   GLOVES: 'gloves'
 };

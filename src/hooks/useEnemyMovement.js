@@ -1,6 +1,7 @@
 import { useRef, useEffect } from 'react';
 import { moveEnemies } from '../utils/mazeUtils';
 import { EntityTypes } from '../utils/entityTypes';
+import { enemySpawner } from '../utils/enemySpawner';
 import { CombatManager } from '../utils/combatManager';
 
 export const useEnemyMovement = (
@@ -19,7 +20,7 @@ export const useEnemyMovement = (
   setLimitBreakReady,
   combatTurn,
   combatEnemy,
-  combatManager  // This should be the actual CombatManager instance
+  combatManager
 ) => {
   const playerRef = useRef(player);
   const moveInterval = useRef(null);
@@ -39,6 +40,10 @@ export const useEnemyMovement = (
     moveInterval.current = setInterval(() => {
       if (!playerRef.current) return;
 
+      // Get all enemies (including spawned ones)
+      const allEnemies = [...enemies, ...enemySpawner.getEnemies()];
+
+      // Move regular enemies
       setEnemies(prevEnemies => {
         if (!prevEnemies || !Array.isArray(prevEnemies)) return [];
         
@@ -53,30 +58,11 @@ export const useEnemyMovement = (
             const newY = enemy.y + movement.dy;
 
             // Check if new position is valid
-            if (newX >= 0 && newX < maze[0].length &&
-                newY >= 0 && newY < maze.length &&
-                maze[newY][newX] !== EntityTypes.WALL &&
-                maze[newY][newX] !== EntityTypes.EXIT) {
-              
+            if (isValidMove(newX, newY, maze, allEnemies)) {
               const updatedEnemy = { ...enemy, x: newX, y: newY };
               
-              // Check for collision with player
-              const willCollide = (
-                (newX === playerRef.current.x && newY === playerRef.current.y) ||
-                (enemy.x === playerRef.current.x && enemy.y === playerRef.current.y)
-              );
-              
-              if (willCollide && !combatInitiated.current) {
-                combatInitiated.current = true;
-                setInCombat(true);
-                setCombatEnemy(updatedEnemy);
-                setCombatTurn('enemy');
-                clearInterval(moveInterval.current);
-                
-                setTimeout(() => {
-                  combatInitiated.current = false;
-                }, 1000);
-
+              if (checkCollisionWithPlayer(updatedEnemy, playerRef.current) && !combatInitiated.current) {
+                initiateCombat(updatedEnemy);
                 return enemy;
               }
               
@@ -89,12 +75,64 @@ export const useEnemyMovement = (
           }
         });
       });
+
+      // Move spawned enemies
+      enemySpawner.getEnemies().forEach(enemy => {
+        try {
+          const movement = moveEnemies(enemy, playerRef.current, maze);
+          if (!movement) return;
+
+          const newX = enemy.x + movement.dx;
+          const newY = enemy.y + movement.dy;
+
+          if (isValidMove(newX, newY, maze, allEnemies)) {
+            enemy.x = newX;
+            enemy.y = newY;
+
+            if (checkCollisionWithPlayer(enemy, playerRef.current) && !combatInitiated.current) {
+              initiateCombat(enemy);
+            }
+          }
+        } catch (error) {
+          console.error('Error moving spawned enemy:', error);
+        }
+      });
     }, 1000);
 
     return () => clearInterval(moveInterval.current);
   }, [maze, enemies, gameOver, showLevelSummary, inCombat]);
 
-  // Separate useEffect for enemy turns
+  // Helper functions
+  const isValidMove = (x, y, maze, allEnemies) => {
+    return (
+      x >= 0 && x < maze[0].length &&
+      y >= 0 && y < maze.length &&
+      maze[y][x] !== EntityTypes.WALL &&
+      maze[y][x] !== EntityTypes.EXIT &&
+      !allEnemies.some(e => e !== null && e.x === x && e.y === y)
+    );
+  };
+
+  const checkCollisionWithPlayer = (enemy, player) => {
+    return (
+      (enemy.x === player.x && enemy.y === player.y) ||
+      (enemy.x === player.x && enemy.y === player.y)
+    );
+  };
+
+  const initiateCombat = (enemy) => {
+    combatInitiated.current = true;
+    setInCombat(true);
+    setCombatEnemy(enemy);
+    setCombatTurn('enemy');
+    clearInterval(moveInterval.current);
+    
+    setTimeout(() => {
+      combatInitiated.current = false;
+    }, 1000);
+  };
+
+  // Combat turn handling useEffect (unchanged)
   useEffect(() => {
     if (!inCombat || !combatEnemy) return;
 
@@ -108,12 +146,11 @@ export const useEnemyMovement = (
     const attackTimeout = setTimeout(() => {
       console.log('Triggering combat turn');
       try {
-        // Call handleCombatTurn directly from the manager
         if (combatManager && typeof combatManager.handleCombatTurn === 'function') {
           combatManager.handleCombatTurn(
-            playerRef.current,  // player
-            combatEnemy,       // enemy
-            combatTurn,        // current turn
+            playerRef.current,
+            combatEnemy,
+            combatTurn,
             handlePlayerDeath,
             setAttackCount,
             setLimitBreakReady,
@@ -132,9 +169,9 @@ export const useEnemyMovement = (
     return () => {
       clearTimeout(attackTimeout);
     };
-  }, [inCombat, combatEnemy, combatTurn]); // Removed combatManager from dependencies
+  }, [inCombat, combatEnemy, combatTurn]);
 
-  // When initiating combat, make sure we set the turn correctly
+  // Initial combat turn setting (unchanged)
   useEffect(() => {
     if (inCombat && combatEnemy && typeof setCombatTurn === 'function') {
       console.log('Setting initial combat turn to enemy');
@@ -142,7 +179,7 @@ export const useEnemyMovement = (
     }
   }, [inCombat, combatEnemy]);
 
-  // Add cleanup effect
+  // Cleanup effect (unchanged)
   useEffect(() => {
     return () => {
       clearInterval(moveInterval.current);

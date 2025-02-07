@@ -1,6 +1,7 @@
 import { handleCombat } from './combatUtils';
 import { Player } from './entityTypes';
 import { EQUIPMENT_LIST } from './equipmentTypes';
+import { enemySpawner } from './enemySpawner';
 
 const ATTACKS_FOR_LIMIT = 3; // Number of attacks needed for limit break
 
@@ -100,14 +101,26 @@ export class CombatManager {
     
     this.addFeedbackMessage('Enemy defeated!', 'combat');
     
-    // Remove enemy from the game using position comparison
+    // Remove enemy from appropriate list
     this.setEnemies(prevEnemies => {
       console.log('Previous enemies:', prevEnemies);
-      const newEnemies = prevEnemies.filter(e => 
-        !(e.x === enemy.x && e.y === enemy.y)  // Compare positions instead of references
+      // Check if it's a spawned enemy
+      const isSpawnedEnemy = !prevEnemies.some(e => 
+        e.x === enemy.x && e.y === enemy.y
       );
-      console.log('Filtered enemies:', newEnemies);
-      return newEnemies;
+      
+      if (isSpawnedEnemy) {
+        // Remove from spawner
+        enemySpawner.removeEnemy(enemy);
+        return prevEnemies; // Return unchanged list
+      } else {
+        // Remove from regular enemies
+        const newEnemies = prevEnemies.filter(e => 
+          !(e.x === enemy.x && e.y === enemy.y)
+        );
+        console.log('Filtered enemies:', newEnemies);
+        return newEnemies;
+      }
     });
     
     // Handle experience gain
@@ -202,10 +215,18 @@ export class CombatManager {
   }
 
   checkEnemyCollision(player, enemy, setInCombat, setCombatEnemy, setCombatTurn) {
-    if (enemy.x === player.x && enemy.y === player.y) {
-      this.addFeedbackMessage(`${enemy.name} attacks you!`, 'damage');
+    // Get all enemies (including spawned ones)
+    const allEnemies = [...(enemy ? [enemy] : []), ...enemySpawner.getEnemies()];
+    
+    // Check collision with any enemy
+    const collidedEnemy = allEnemies.find(e => 
+      e.x === player.x && e.y === player.y
+    );
+
+    if (collidedEnemy) {
+      this.addFeedbackMessage(`${collidedEnemy.name} attacks you!`, 'damage');
       setInCombat(true);
-      setCombatEnemy(enemy);
+      setCombatEnemy(collidedEnemy);
       setCombatTurn('enemy'); // Combat starts with enemy turn since they initiated
     }
   }
