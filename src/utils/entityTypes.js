@@ -59,7 +59,8 @@ export class Player extends Character {
       gold: 0,
       diamond: 0,
       coal: 0,
-      wood: 0
+      wood: 0,
+      cloth: 0
     };
     this.equipment = {
       mainhand: null,

@@ -10,7 +10,10 @@ export const EnemyTypes = {
     color: '#8B4513',
     minLevel: 1,
     spawnWeight: 100,
-    image: ratImage
+    image: ratImage,
+    drops: [
+      { type: 'cloth', chance: 0.3, amount: 1 }
+    ]
   },
   SPIDER: {
     name: 'Spider',
@@ -19,7 +22,11 @@ export const EnemyTypes = {
     color: '#4A0404',
     minLevel: 2,
     spawnWeight: 80,
-    image: spiderImage
+    image: spiderImage,
+    drops: [
+      { type: 'cloth', chance: 0.4, amount: 1 },
+      { type: 'iron', chance: 0.2, amount: 1 }
+    ]
   },
   SKELETON: {
     name: 'Skeleton',
@@ -28,7 +35,11 @@ export const EnemyTypes = {
     color: '#E0E0E0',
     minLevel: 3,
     spawnWeight: 60,
-    image: null
+    image: null,
+    drops: [
+      { type: 'cloth', chance: 0.5, amount: 2 },
+      { type: 'iron', chance: 0.3, amount: 1 }
+    ]
   },
   GOBLIN: {
     name: 'Goblin',
@@ -37,7 +48,12 @@ export const EnemyTypes = {
     color: '#355E3B',
     minLevel: 4,
     spawnWeight: 50,
-    image: null
+    image: null,
+    drops: [
+      { type: 'cloth', chance: 0.6, amount: 2 },
+      { type: 'iron', chance: 0.4, amount: 1 },
+      { type: 'gold', chance: 0.1, amount: 1 }
+    ]
   },
   ORC: {
     name: 'Orc',
@@ -46,7 +62,12 @@ export const EnemyTypes = {
     color: '#006400',
     minLevel: 5,
     spawnWeight: 40,
-    image: null
+    image: null,
+    drops: [
+      { type: 'cloth', chance: 0.7, amount: 2 },
+      { type: 'iron', chance: 0.5, amount: 2 },
+      { type: 'gold', chance: 0.2, amount: 1 }
+    ]
   },
   TROLL: {
     name: 'Troll',
@@ -55,7 +76,12 @@ export const EnemyTypes = {
     color: '#808000',
     minLevel: 5,
     spawnWeight: 30,
-    image: null
+    image: null,
+    drops: [
+      { type: 'cloth', chance: 0.8, amount: 3 },
+      { type: 'iron', chance: 0.6, amount: 2 },
+      { type: 'gold', chance: 0.3, amount: 1 }
+    ]
   },
   DEMON: {
     name: 'Demon',
@@ -64,7 +90,12 @@ export const EnemyTypes = {
     color: '#8B0000',
     minLevel: 6,
     spawnWeight: 20,
-    image: null
+    image: null,
+    drops: [
+      { type: 'cloth', chance: 0.9, amount: 3 },
+      { type: 'iron', chance: 0.7, amount: 2 },
+      { type: 'gold', chance: 0.4, amount: 2 }
+    ]
   },
   DRAGON: {
     name: 'Dragon',
@@ -73,7 +104,12 @@ export const EnemyTypes = {
     color: '#FF4500',
     minLevel: 8,
     spawnWeight: 10,
-    image: null
+    image: null,
+    drops: [
+      { type: 'cloth', chance: 1.0, amount: 4 },
+      { type: 'iron', chance: 0.8, amount: 3 },
+      { type: 'gold', chance: 0.5, amount: 2 }
+    ]
   }
 };
 

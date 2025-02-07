@@ -115,7 +115,7 @@ export class CombatManager {
         return prevEnemies; // Return unchanged list
       } else {
         // Remove from regular enemies
-        const newEnemies = prevEnemies.filter(e => e !== enemy);  // Direct reference comparison
+        const newEnemies = prevEnemies.filter(e => e !== enemy);
         console.log('Filtered enemies:', newEnemies);
         return newEnemies;
       }
@@ -138,7 +138,22 @@ export class CombatManager {
       return newPlayer;
     });
     
-    // Handle item drops
+    // Process enemy drops
+    if (enemy.type?.drops) {
+      enemy.type.drops.forEach(drop => {
+        if (Math.random() < drop.chance) {
+          this.setPlayer(prev => {
+            const newPlayer = new Player(prev.x, prev.y);
+            Object.assign(newPlayer, { ...prev });
+            newPlayer.inventory[drop.type] = (newPlayer.inventory[drop.type] || 0) + drop.amount;
+            this.addFeedbackMessage(`Found ${drop.amount} ${drop.type}!`, 'collect');
+            return newPlayer;
+          });
+        }
+      });
+    }
+    
+    // Handle equipment drops
     this.handleItemDrops(enemy);
     
     this.addFeedbackMessage(`Gained ${expGained} experience!`, 'info');
