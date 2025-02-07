@@ -115,15 +115,16 @@ export class Enemy {
     this.type = type || EnemyTypes.RAT;
     this.direction = Math.floor(Math.random() * 4);
     
-    // More gradual scaling based on player level
+    // Calculate level scaling factor
     const levelDifference = playerLevel - this.type.minLevel;
-    const levelScale = Math.max(1, 1 + (levelDifference * 0.15));
+    const levelScale = Math.max(1, 1 + (levelDifference * 0.2)); // Increased from 0.15 to 0.2 for more noticeable scaling
     
-    // Cap the maximum scaling based on enemy type
-    const maxScale = 1.5 + (this.type.minLevel * 0.1);
+    // Adjust max scale based on enemy tier
+    const tierBonus = (this.type.minLevel - 1) * 0.15; // Higher tier enemies scale better
+    const maxScale = 2.0 + tierBonus; // Increased from 1.5 to 2.0 for better late-game scaling
     const finalScale = Math.min(levelScale, maxScale);
     
-    // Calculate stats with balanced scaling
+    // Calculate stats with enhanced scaling
     this.maxHp = Math.floor(this.type.baseHp * finalScale);
     this.currentHp = this.maxHp;
     this.attack = Math.floor(this.type.baseAttack * finalScale);

@@ -1,5 +1,4 @@
 import React from 'react';
-import Modal from '../common/Modal';
 
 const BagPanel = ({ player, onClose }) => {
   if (!player) return null;

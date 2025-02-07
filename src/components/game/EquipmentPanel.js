@@ -55,7 +55,7 @@ const EquipmentPanel = ({ player }) => {
   };
 
   // Debug log to see what's in the equipment object
-  console.log('Equipment:', player.equipment);
+  //console.log('Equipment:', player.equipment);
 
   // Filter and standardize equipment slots to show
   const equipmentSlots = {
@@ -69,7 +69,7 @@ const EquipmentPanel = ({ player }) => {
   };
 
   // Debug log to see what slots we're displaying
-  console.log('Equipment Slots:', equipmentSlots);
+  //console.log('Equipment Slots:', equipmentSlots);
 
   return (
     <div style={containerStyle}>
@@ -78,7 +78,7 @@ const EquipmentPanel = ({ player }) => {
         <div style={gridStyle}>
           {Object.entries(equipmentSlots).map(([slot, item]) => {
             // Debug log for each slot
-            console.log(`Slot ${slot}:`, item);
+            //console.log(`Slot ${slot}:`, item);
             
             return (
               <div key={slot} style={slotStyle}>
