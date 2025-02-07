@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { generateMaze, moveEnemies, handleEnemyDeath } from '../../utils/mazeUtils';
 import { drawMaze } from '../../utils/mazeRenderer';
 import { Player, Enemy, EntityTypes } from '../../utils/entityTypes';
@@ -48,13 +48,17 @@ const GameGrid = () => {
     setFeedbackMessages(prev => [...prev.slice(-2), { text, type, id: Date.now() }]);
   };
 
-  // Initialize combat manager
-  const combatManager = new CombatManager(
-    addFeedbackMessage,
-    setPlayer,
-    setDroppedItems,
-    setEnemies
-  );
+  // Initialize combat manager with useMemo and proper dependencies
+  const combatManager = useMemo(() => {
+    console.log('Creating new CombatManager with setEnemies:', typeof setEnemies);
+    const manager = new CombatManager(
+      addFeedbackMessage,
+      setPlayer,
+      setDroppedItems,
+      setEnemies
+    );
+    return manager;
+  }, []);  // Keep empty dependency array to maintain single instance
 
   const handlePlayerDeath = useCallback(() => {
     console.log("Handling player death"); // Debug log
@@ -521,13 +525,18 @@ const GameGrid = () => {
     enemies,
     setEnemies,
     player,
-    setGameOver,
     gameOver,
     showLevelSummary,
-    addFeedbackMessage,
-    setGameOverReason,
+    inCombat,
+    setInCombat,
+    setCombatEnemy,
+    setCombatTurn,
     handlePlayerDeath,
-    inCombat // Pass this to prevent movement during combat
+    setAttackCount,
+    setLimitBreakReady,
+    combatTurn,
+    combatEnemy,
+    combatManager  // Pass the memoized combat manager
   );
 
   // Set movePlayerRef.current to the movePlayer function

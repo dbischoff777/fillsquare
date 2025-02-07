@@ -10,6 +10,9 @@ export class CombatManager {
     this.setPlayer = setPlayer;
     this.setDroppedItems = setDroppedItems;
     this.setEnemies = setEnemies;
+    
+    // Debug check
+    console.log('CombatManager initialized with setEnemies:', typeof this.setEnemies);
   }
 
   handleLimitBreak(player, combatEnemy, setLimitBreakReady, setAttackCount, setCombatTurn) {
@@ -42,7 +45,7 @@ export class CombatManager {
       this.addFeedbackMessage(`You attack! Dealt ${damage} damage!`, 'combat');
       
       if (isDead) {
-        this.handleEnemyDeath(enemy, setInCombat, setCombatEnemy);
+        this.handleEnemyDeath(enemy, setInCombat, setCombatEnemy, setAttackCount, setLimitBreakReady);
         return;
       }
       
@@ -62,19 +65,50 @@ export class CombatManager {
       player.currentHp -= damage;
       this.addFeedbackMessage(`${enemy.name} attacks! -${damage} HP`, 'damage');
       
+      // Check for player death first
       if (player.currentHp <= 0) {
+        player.currentHp = 0;
         handlePlayerDeath();
-      } else {
-        setCombatTurn('player');
+        setInCombat(false);
+        setCombatEnemy(null);
+        return;
       }
+      
+      // Player's counter-attack
+      const { isDead: enemyDied, damage: counterDamage } = handleCombat(player, enemy);
+      this.addFeedbackMessage(`You counter-attack! Dealt ${counterDamage} damage!`, 'combat');
+      
+      if (enemyDied) {
+        this.handleEnemyDeath(enemy, setInCombat, setCombatEnemy, setAttackCount, setLimitBreakReady);
+        return;
+      }
+      
+      // If both survive, switch to player's turn
+      setCombatTurn('player');
     }
   }
 
-  handleEnemyDeath(enemy, setInCombat, setCombatEnemy) {
+  handleEnemyDeath(enemy, setInCombat, setCombatEnemy, setAttackCount, setLimitBreakReady) {
+    console.log('=== Enemy Death Debug ===');
+    console.log('Enemy being removed:', enemy);
+    console.log('setEnemies function:', this.setEnemies);
+    
+    if (typeof this.setEnemies !== 'function') {
+      console.error('setEnemies is not a function!');
+      return;
+    }
+    
     this.addFeedbackMessage('Enemy defeated!', 'combat');
     
-    // Remove enemy from the game
-    this.setEnemies(prevEnemies => prevEnemies.filter(e => e !== enemy));
+    // Remove enemy from the game using position comparison
+    this.setEnemies(prevEnemies => {
+      console.log('Previous enemies:', prevEnemies);
+      const newEnemies = prevEnemies.filter(e => 
+        !(e.x === enemy.x && e.y === enemy.y)  // Compare positions instead of references
+      );
+      console.log('Filtered enemies:', newEnemies);
+      return newEnemies;
+    });
     
     // Handle experience gain
     const expGained = 50 * enemy.level;
@@ -98,9 +132,13 @@ export class CombatManager {
     
     this.addFeedbackMessage(`Gained ${expGained} experience!`, 'info');
 
-    // End combat
+    // Reset combat states with debug logging
+    console.log('Resetting combat states');
     setInCombat(false);
     setCombatEnemy(null);
+    setAttackCount(0);
+    setLimitBreakReady(false);
+    console.log('=== End Enemy Death Debug ===');
   }
 
   handleItemDrops(enemy) {

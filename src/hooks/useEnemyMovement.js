@@ -1,29 +1,38 @@
 import { useRef, useEffect } from 'react';
 import { moveEnemies } from '../utils/mazeUtils';
 import { EntityTypes } from '../utils/entityTypes';
+import { CombatManager } from '../utils/combatManager';
 
 export const useEnemyMovement = (
   maze,
   enemies,
   setEnemies,
   player,
-  setGameOver,
   gameOver,
   showLevelSummary,
-  addFeedbackMessage,
-  setGameOverReason,
+  inCombat,
+  setInCombat,
+  setCombatEnemy,
+  setCombatTurn,
   handlePlayerDeath,
-  inCombat
+  setAttackCount,
+  setLimitBreakReady,
+  combatTurn,
+  combatEnemy,
+  combatManager  // This should be the actual CombatManager instance
 ) => {
   const playerRef = useRef(player);
   const moveInterval = useRef(null);
+  const combatInitiated = useRef(false);
 
   useEffect(() => {
     playerRef.current = player;
   }, [player]);
 
+  // First useEffect for movement and combat initiation
   useEffect(() => {
     if (gameOver || showLevelSummary || inCombat || !enemies || !Array.isArray(enemies)) {
+      console.log('Movement effect - Clearing interval due to:', { gameOver, showLevelSummary, inCombat });
       clearInterval(moveInterval.current);
       return;
     }
@@ -50,18 +59,31 @@ export const useEnemyMovement = (
                 maze[newY][newX] !== EntityTypes.WALL &&
                 maze[newY][newX] !== EntityTypes.EXIT) {
               
-              // Check for collision with other enemies
-              const enemyCollision = prevEnemies.some(
-                otherEnemy => otherEnemy !== enemy && 
-                             otherEnemy.x === newX && 
-                             otherEnemy.y === newY
+              const updatedEnemy = { ...enemy, x: newX, y: newY };
+              
+              // Check for collision with player
+              const willCollide = (
+                (newX === playerRef.current.x && newY === playerRef.current.y) ||
+                (enemy.x === playerRef.current.x && enemy.y === playerRef.current.y)
               );
+              
+              if (willCollide && !combatInitiated.current) {
+                console.log('Collision detected! Initiating combat...');
+                combatInitiated.current = true;
+                setInCombat(true);
+                setCombatEnemy(updatedEnemy);
+                setCombatTurn('enemy');
+                clearInterval(moveInterval.current);
+                
+                setTimeout(() => {
+                  combatInitiated.current = false;
+                }, 1000);
 
-              if (!enemyCollision) {
-                return { ...enemy, x: newX, y: newY };
+                return enemy;
               }
+              
+              return updatedEnemy;
             }
-            // Invalid move or collision, keep current position
             return enemy;
           } catch (error) {
             console.error('Error moving enemy:', error);
@@ -74,5 +96,59 @@ export const useEnemyMovement = (
     return () => clearInterval(moveInterval.current);
   }, [maze, enemies, gameOver, showLevelSummary, inCombat]);
 
-  // Remove the attack effect since combat is now turn-based
+  // Separate useEffect for enemy turns
+  useEffect(() => {
+    if (!inCombat || !combatEnemy) return;
+
+    console.log('Combat conditions met - checking combat manager:', {
+      inCombat,
+      hasEnemy: !!combatEnemy,
+      managerType: typeof combatManager,
+      turn: combatTurn
+    });
+    
+    const attackTimeout = setTimeout(() => {
+      console.log('Triggering combat turn');
+      try {
+        // Call handleCombatTurn directly from the manager
+        if (combatManager && typeof combatManager.handleCombatTurn === 'function') {
+          combatManager.handleCombatTurn(
+            playerRef.current,  // player
+            combatEnemy,       // enemy
+            combatTurn,        // current turn
+            handlePlayerDeath,
+            setAttackCount,
+            setLimitBreakReady,
+            setCombatTurn,
+            setInCombat,
+            setCombatEnemy
+          );
+        } else {
+          console.error('Combat manager not properly initialized:', combatManager);
+        }
+      } catch (error) {
+        console.error('Error in combat turn:', error);
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(attackTimeout);
+    };
+  }, [inCombat, combatEnemy, combatTurn]); // Removed combatManager from dependencies
+
+  // When initiating combat, make sure we set the turn correctly
+  useEffect(() => {
+    if (inCombat && combatEnemy && typeof setCombatTurn === 'function') {
+      console.log('Setting initial combat turn to enemy');
+      setCombatTurn('enemy');
+    }
+  }, [inCombat, combatEnemy]);
+
+  // Add cleanup effect
+  useEffect(() => {
+    return () => {
+      clearInterval(moveInterval.current);
+      combatInitiated.current = false;
+    };
+  }, []);
 }; 
