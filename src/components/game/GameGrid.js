@@ -39,6 +39,8 @@ const GameGrid = () => {
   const [combatTurn, setCombatTurn] = useState('player'); // 'player' or 'enemy'
   const [attackCount, setAttackCount] = useState(0);
   const [limitBreakReady, setLimitBreakReady] = useState(false);
+  const [isBagOpen, setIsBagOpen] = useState(false);
+  const [isCraftingOpen, setIsCraftingOpen] = useState(false);
   const canvasRef = useRef(null);
   const movePlayerRef = useRef(null);
 
@@ -707,6 +709,17 @@ const GameGrid = () => {
     });
   };
 
+  // Function to handle opening the bag
+  const handleBagClick = () => {
+    if (player) {
+      setIsBagOpen(!isBagOpen);
+      // Remove any existing bag button state if it exists
+      if (player.bagOpen !== undefined) {
+        player.bagOpen = false;
+      }
+    }
+  };
+
   return (
     <div style={{ 
       display: 'flex', 
@@ -729,7 +742,7 @@ const GameGrid = () => {
         display: 'flex', 
         flexDirection: 'column', 
         alignItems: 'center',
-        position: 'relative'  // Add relative positioning to the container
+        position: 'relative'
       }}>
         <div style={{
           display: 'flex',
@@ -749,13 +762,48 @@ const GameGrid = () => {
             Dungeon Hero
           </h1>
           <div style={{
-            color: timeRemaining <= WARNING_TIME ? '#ff4444' : '#fff',
-            fontSize: '24px',
-            fontWeight: 'bold',
-            textShadow: timeRemaining <= WARNING_TIME ? '0 0 10px rgba(255,0,0,0.5)' : 'none',
-            animation: timeRemaining <= WARNING_TIME ? 'pulse 1s infinite' : 'none'
+            display: 'flex',
+            gap: '10px'
           }}>
-            {formatTime(timeRemaining)}
+            <button
+              onClick={handleBagClick}
+              style={{
+                background: isBagOpen ? '#30475e' : 'rgba(20, 20, 30, 0.9)',
+                border: `2px solid ${isBagOpen ? '#4a6b8f' : '#30475e'}`,
+                color: 'white',
+                padding: '10px 20px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              Bag
+            </button>
+            <button
+              onClick={() => setIsCraftingOpen(!isCraftingOpen)}
+              style={{
+                background: isCraftingOpen ? '#30475e' : 'rgba(20, 20, 30, 0.9)',
+                border: `2px solid ${isCraftingOpen ? '#4a6b8f' : '#30475e'}`,
+                color: 'white',
+                padding: '10px 20px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              Craft
+            </button>
+            <div style={{
+              color: timeRemaining <= WARNING_TIME ? '#ff4444' : '#fff',
+              fontSize: '24px',
+              fontWeight: 'bold',
+              textShadow: timeRemaining <= WARNING_TIME ? '0 0 10px rgba(255,0,0,0.5)' : 'none',
+              animation: timeRemaining <= WARNING_TIME ? 'pulse 1s infinite' : 'none'
+            }}>
+              {formatTime(timeRemaining)}
+            </div>
           </div>
         </div>
         
@@ -766,7 +814,7 @@ const GameGrid = () => {
             borderRadius: '8px',
             boxShadow: '0 4px 6px rgba(0, 0, 0, 0.2)',
             marginBottom: '10px',
-            position: 'relative'  // Add relative positioning to the canvas
+            position: 'relative'
           }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
@@ -963,10 +1011,22 @@ const GameGrid = () => {
           messages={feedbackMessages} 
           currentEnemy={currentEnemy}
         />
+
+        {isBagOpen && player && (
+          <BagPanel 
+            player={player} 
+            onClose={() => setIsBagOpen(false)}
+          />
+        )}
+
+        {isCraftingOpen && player && (
+          <CraftingPanel 
+            player={player} 
+            onClose={() => setIsCraftingOpen(false)}
+          />
+        )}
       </div>
       <EquipmentPanel player={player} />
-      <CraftingPanel player={player} onCraft={handleCraft} />
-      <BagPanel player={player} onSalvage={handleSalvage} />
       {showLevelSummary && (
         <LevelSummary 
           treasuresCollected={treasuresCollected}

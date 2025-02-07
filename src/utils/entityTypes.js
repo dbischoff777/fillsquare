@@ -1,6 +1,5 @@
 import { EquipmentSlot, EQUIPMENT_LIST } from './equipmentTypes';
 import playerImage from '../assets/images/player/player.png';
-import { CRAFTING_RECIPES } from './craftingRecipes';
 
 export const EntityTypes = {
   WALL: 1,

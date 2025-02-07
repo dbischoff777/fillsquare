@@ -1,0 +1,175 @@
+.crafting-panel {
+  background-color: rgba(20, 20, 30, 0.95);
+  border: 2px solid #30475e;
+  border-radius: 8px;
+  padding: 20px;
+  width: 80%;
+  max-width: 800px;
+  max-height: 80vh;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.crafting-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #30475e;
+}
+
+.crafting-header h2 {
+  margin: 0;
+  color: #fff;
+  font-size: 24px;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 5px 10px;
+}
+
+.close-button:hover {
+  color: #ff4444;
+}
+
+.recipes-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 15px;
+  overflow-y: auto;
+  max-height: calc(80vh - 100px);
+  padding-right: 10px;
+}
+
+.recipe-card {
+  background: rgba(40, 44, 52, 0.9);
+  border: 1px solid #30475e;
+  border-radius: 6px;
+  padding: 15px;
+  transition: all 0.2s ease;
+}
+
+.recipe-card.locked {
+  opacity: 0.7;
+}
+
+.recipe-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.tier-badge {
+  background: #30475e;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #fff;
+}
+
+.recipe-description {
+  color: #aaa;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.recipe-requirements {
+  background: rgba(20, 20, 30, 0.5);
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.resource, .required-item {
+  display: flex;
+  justify-content: space-between;
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.met {
+  color: #4caf50;
+}
+
+.unmet {
+  color: #ff4444;
+}
+
+.requirement-header {
+  color: #aaa;
+  margin: 10px 0 5px;
+  font-size: 14px;
+}
+
+.recipe-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 8px;
+  margin: 15px 0;
+}
+
+.stat {
+  background: rgba(48, 71, 94, 0.3);
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.craft-button {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 16px;
+}
+
+.craft-button.available {
+  background: #4caf50;
+  color: white;
+}
+
+.craft-button.available:hover {
+  background: #45a049;
+}
+
+.craft-button.locked {
+  background: #666;
+  cursor: not-allowed;
+}
+
+/* Scrollbar styling */
+.recipes-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.recipes-container::-webkit-scrollbar-track {
+  background: rgba(20, 20, 30, 0.5);
+  border-radius: 4px;
+}
+
+.recipes-container::-webkit-scrollbar-thumb {
+  background: #30475e;
+  border-radius: 4px;
+}
+
+.recipes-container::-webkit-scrollbar-thumb:hover {
+  background: #405f7e;
+} 

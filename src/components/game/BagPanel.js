@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Modal from '../common/Modal';
 
-const BagPanel = ({ player, onSalvage }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  
+const BagPanel = ({ player, onClose }) => {
   if (!player) return null;
 
   // Group identical items and count them
@@ -17,32 +15,74 @@ const BagPanel = ({ player, onSalvage }) => {
     return acc;
   }, {});
 
-  return (
-    <>
-      <button
-        onClick={() => setIsModalOpen(true)}
-        style={{
-          position: 'fixed',
-          left: '20px',
-          bottom: '20px',
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          color: '#fff',
-          border: 'none',
-          padding: '10px 20px',
-          borderRadius: '8px',
-          cursor: 'pointer',
-          fontSize: '16px'
-        }}
-      >
-        Bag ({player.bag.length}/{player.bagSize})
-      </button>
+  const handleSalvage = (itemKey) => {
+    const [itemName, itemType] = itemKey.split('-');
+    const itemsToSalvage = player.bag.filter(item => 
+      item.name === itemName && item.type === itemType
+    );
 
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={`Bag (${player.bag.length}/${player.bagSize})`}
-      >
-        <div style={{ color: '#fff' }}>
+    if (itemsToSalvage.length === 0) return;
+
+    // Get the first item as reference for requirements
+    const item = itemsToSalvage[0];
+    
+    // Add salvaged resources to inventory
+    if (item.requirements) {
+      Object.entries(item.requirements).forEach(([resource, amount]) => {
+        const salvageAmount = amount === 1 ? 1 : Math.floor(amount / 2);
+        player.inventory[resource] = (player.inventory[resource] || 0) + salvageAmount;
+      });
+    }
+
+    // Remove salvaged items from bag
+    player.bag = player.bag.filter(bagItem => 
+      !(bagItem.name === itemName && bagItem.type === itemType)
+    );
+  };
+
+  return (
+    <div className="bag-panel">
+      <div style={{
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        backgroundColor: 'rgba(20, 20, 30, 0.95)',
+        padding: '20px',
+        borderRadius: '8px',
+        border: '2px solid #30475e',
+        color: '#fff',
+        minWidth: '300px',
+        maxWidth: '500px',
+        maxHeight: '80vh',
+        overflowY: 'auto',
+        zIndex: 1000
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '20px',
+          borderBottom: '1px solid #30475e',
+          paddingBottom: '10px'
+        }}>
+          <h2 style={{ margin: 0 }}>Bag ({player.bag.length}/{player.bagSize})</h2>
+          <button 
+            onClick={onClose}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#fff',
+              fontSize: '24px',
+              cursor: 'pointer',
+              padding: '5px 10px'
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        <div>
           {Object.entries(stackedItems).map(([key, { item, count }]) => (
             <div key={key} style={{
               backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -79,7 +119,7 @@ const BagPanel = ({ player, onSalvage }) => {
                 ))}
               </div>
               <button
-                onClick={() => onSalvage(key)}
+                onClick={() => handleSalvage(key)}
                 style={{
                   backgroundColor: '#ff4444',
                   color: '#fff',
@@ -102,8 +142,8 @@ const BagPanel = ({ player, onSalvage }) => {
             </div>
           )}
         </div>
-      </Modal>
-    </>
+      </div>
+    </div>
   );
 };
 

@@ -245,23 +245,66 @@ export const CRAFTING_RECIPES = {
   }
 };
 
-export const canCraft = (recipe, inventory, playerEquipment) => {
-  // Check if player has required predecessor items
-  if (recipe.requires) {
-    const hasRequiredItems = recipe.requires.some(requiredItem => 
-      playerEquipment.some(equipment => equipment.name === CRAFTING_RECIPES[requiredItem].name)
-    );
-    if (!hasRequiredItems) return false;
-  }
-
-  // Check if player has required resources
-  return Object.entries(recipe.requirements).every(([resource, amount]) => 
-    inventory[resource] >= amount
+export const getRecipeStatus = (recipe, inventory, player) => {
+  // Check resource requirements
+  const hasResources = Object.entries(recipe.requirements).every(
+    ([resource, amount]) => inventory[resource] >= amount
   );
+
+  // Check tier requirements
+  const currentTier = Math.max(
+    ...Object.values(player.equipment)
+      .filter(item => item && item.type === recipe.type)
+      .map(item => item.tier)
+      .concat(0)
+  );
+  
+  const isCorrectTier = recipe.tier <= currentTier + 1;
+
+  // Check required items
+  const hasRequiredItems = recipe.requires ? 
+    recipe.requires.every(requiredItemId => {
+      const requiredRecipe = CRAFTING_RECIPES[requiredItemId];
+      return Object.values(player.equipment).some(
+        equippedItem => 
+          equippedItem && 
+          equippedItem.name === requiredRecipe.name &&
+          equippedItem.tier === requiredRecipe.tier
+      );
+    }) : true;
+
+  return {
+    canCraft: hasResources && isCorrectTier && hasRequiredItems,
+    hasResources,
+    isCorrectTier,
+    hasRequiredItems,
+    requiredItems: recipe.requires?.map(id => CRAFTING_RECIPES[id].name) || [],
+    missingResources: Object.entries(recipe.requirements)
+      .filter(([resource, amount]) => inventory[resource] < amount)
+      .map(([resource, amount]) => ({
+        resource,
+        required: amount,
+        current: inventory[resource]
+      }))
+  };
+};
+
+// Update getAvailableRecipes to return all recipes with their status
+export const getAvailableRecipes = (inventory, player) => {
+  return Object.entries(CRAFTING_RECIPES).map(([id, recipe]) => ({
+    id,
+    ...recipe,
+    status: getRecipeStatus(recipe, inventory, player)
+  }));
+};
+
+export const canCraft = (recipe, inventory, player) => {
+  const status = getRecipeStatus(recipe, inventory, player);
+  return status.canCraft;
 };
 
 export const craftItem = (recipe, inventory, player) => {
-  if (!canCraft(recipe, inventory)) return false;
+  if (!canCraft(recipe, inventory, player)) return false;
   
   // Deduct resources
   Object.entries(recipe.requirements).forEach(([resource, amount]) => {
@@ -281,14 +324,4 @@ export const craftItem = (recipe, inventory, player) => {
   player.equip(craftedItem);
   
   return true;
-};
-
-// Helper function to get available recipes based on tier and requirements
-export const getAvailableRecipes = (inventory, playerEquipment) => {
-  return Object.entries(CRAFTING_RECIPES)
-    .filter(([id, recipe]) => canCraft(recipe, inventory, playerEquipment))
-    .map(([id, recipe]) => ({
-      id,
-      ...recipe
-    }));
 }; 
