@@ -1,6 +1,21 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 const BagPanel = ({ player, onClose }) => {
+  const panelRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (panelRef.current && !panelRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
+
   if (!player) return null;
 
   // Group identical items and count them
@@ -39,6 +54,13 @@ const BagPanel = ({ player, onClose }) => {
     );
   };
 
+  const handleSalvageAll = () => {
+    // Process each unique item stack
+    Object.keys(stackedItems).forEach(itemKey => {
+      handleSalvage(itemKey);
+    });
+  };
+
   return (
     <div className="bag-panel" style={{
       position: 'absolute',
@@ -47,7 +69,7 @@ const BagPanel = ({ player, onClose }) => {
       transform: 'translateX(-50%)',
       zIndex: 1000
     }}>
-      <div style={{
+      <div ref={panelRef} style={{
         backgroundColor: 'rgba(20, 20, 30, 0.95)',
         padding: '20px',
         borderRadius: '8px',
@@ -81,6 +103,25 @@ const BagPanel = ({ player, onClose }) => {
             ×
           </button>
         </div>
+
+        {player.bag.length > 0 && (
+          <button
+            onClick={handleSalvageAll}
+            style={{
+              backgroundColor: '#ff4444',
+              color: '#fff',
+              border: 'none',
+              padding: '10px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              width: '100%',
+              marginBottom: '20px',
+              fontSize: '16px'
+            }}
+          >
+            Salvage All Items
+          </button>
+        )}
 
         <div>
           {Object.entries(stackedItems).map(([key, { item, count }]) => (
