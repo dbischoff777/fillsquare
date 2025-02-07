@@ -1,12 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import Modal from '../common/Modal';
 import { CRAFTING_RECIPES } from '../../utils/craftingRecipes';
 import { EquipmentSlot } from '../../utils/equipmentTypes';
 import { getAvailableRecipes, craftItem } from '../../utils/craftingRecipes';
 import './CraftingPanel.css';
 
 const CraftingPanel = ({ player, onClose }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Check if any items are craftable
   const hasCraftableItems = useMemo(() => {
