@@ -45,45 +45,56 @@ const BASIC_PICKAXE = {
 
 export class Player extends Character {
   constructor(x, y) {
-    super(x, y, EntityTypes.PLAYER, 100, 10); // Base HP: 100, Base Attack: 10
-    this.baseStats = {
-      attack: 10,
-      defense: 5,
-      hp: 100,
-      maxHp: 100,
-      mining: 1
-    };
-    this.defense = 1;
+    super(x, y, EntityTypes.PLAYER, 100, 10);
     this.level = 1;
     this.experience = 0;
     this.experienceToNextLevel = 100;
-    
-    // Initialize equipment slots
-    this.equipment = {
-      [EquipmentSlot.MAIN_HAND]: null,
-      [EquipmentSlot.ARMOR]: null,
-      [EquipmentSlot.TOOL]: BASIC_PICKAXE
-    };
-    
+    this.maxHp = 100;
+    this.currentHp = 100;
+    this.attack = 10;
+    this.defense = 0;
     this.inventory = {
       stone: 0,
-      coal: 0,
       copper: 0,
       iron: 0,
       gold: 0,
       diamond: 0
     };
-    this.bag = [];  // Array to store unequipped items
-    this.bagSize = 10;  // Maximum number of items in bag
-    this.image = playerImage;
+    this.equipment = {
+      mainhand: null,
+      offhand: null,
+      head: null,
+      chest: null,
+      legs: null,
+      feet: null,
+      tool: null
+    };
+    this.bag = [];
+    this.bagSize = 10;
     
-    // Initialize HP after equipment is set
-    this.currentHp = this.getTotalStats().maxHp;
+    // Add tech-related properties
+    this.techPoints = 0;
+    this.technologies = [];
+  }
+
+  levelUp() {
+    this.level += 1;
+    this.maxHp += 10;
+    this.currentHp = this.maxHp;
+    this.attack += 2;
+    this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * 1.5);
+    this.techPoints += 1; // Give 1 tech point per level
   }
 
   getTotalStats() {
     // Start with base stats
-    const totalStats = { ...this.baseStats };
+    const totalStats = {
+      attack: this.attack,
+      defense: this.defense,
+      hp: this.currentHp,
+      maxHp: this.maxHp,
+      mining: 1
+    };
 
     // Add equipment bonuses from all slots
     Object.values(this.equipment).forEach(item => {
@@ -108,7 +119,7 @@ export class Player extends Character {
 
     // Update current HP proportionally when max HP changes
     const newStats = this.getTotalStats();
-    const hpPercentage = this.currentHp / this.baseStats.maxHp;
+    const hpPercentage = this.currentHp / this.maxHp;
     this.currentHp = Math.floor(newStats.maxHp * hpPercentage);
     
     // Update attack and defense stats
@@ -121,7 +132,7 @@ export class Player extends Character {
     
     // Update stats after unequipping
     const newStats = this.getTotalStats();
-    const hpPercentage = this.currentHp / this.baseStats.maxHp;
+    const hpPercentage = this.currentHp / this.maxHp;
     this.currentHp = Math.floor(newStats.maxHp * hpPercentage);
     this.attack = newStats.attack;
     this.defense = newStats.defense;
@@ -142,24 +153,6 @@ export class Player extends Character {
     if (this.experience >= this.experienceToNextLevel) {
       this.levelUp();
     }
-  }
-
-  levelUp() {
-    this.level += 1;
-    this.experience -= this.experienceToNextLevel;
-    this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * 1.5);
-    
-    // Increase base stats
-    this.baseStats.maxHp += 20;
-    this.baseStats.hp += 20;
-    this.baseStats.attack += 5;
-    this.baseStats.defense += 2;
-    
-    // Update current stats
-    const newStats = this.getTotalStats();
-    this.currentHp = newStats.maxHp; // Full heal on level up
-    this.attack = newStats.attack;
-    this.defense = newStats.defense;
   }
 
   getMiningPower() {

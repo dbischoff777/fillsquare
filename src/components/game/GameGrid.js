@@ -14,6 +14,7 @@ import CraftingPanel from './CraftingPanel';
 import BagPanel from './BagPanel';
 import { CombatManager } from '../../utils/combatManager';
 import { getAvailableRecipes } from '../../utils/craftingRecipes';
+import TechTree from './TechTree';
 
 const LEVEL_TIME_LIMIT = 300; // 5 minutes in seconds
 const WARNING_TIME = 60; // 1 minute in seconds
@@ -42,6 +43,7 @@ const GameGrid = () => {
   const [limitBreakReady, setLimitBreakReady] = useState(false);
   const [isBagOpen, setIsBagOpen] = useState(false);
   const [isCraftingOpen, setIsCraftingOpen] = useState(false);
+  const [isTechTreeOpen, setIsTechTreeOpen] = useState(false);
   const canvasRef = useRef(null);
   const movePlayerRef = useRef(null);
 
@@ -825,6 +827,41 @@ const GameGrid = () => {
                 }}/>
               )}
             </button>
+            <button
+              onClick={() => setIsTechTreeOpen(!isTechTreeOpen)}
+              style={{
+                background: isTechTreeOpen ? '#30475e' : 'rgba(20, 20, 30, 0.9)',
+                border: `2px solid ${isTechTreeOpen ? '#4a6b8f' : '#30475e'}`,
+                color: 'white',
+                padding: '10px 20px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                transition: 'all 0.2s ease',
+                position: 'relative'
+              }}
+            >
+              Tech
+              {player?.techPoints > 0 && (
+                <div style={{
+                  position: 'absolute',
+                  top: '-5px',
+                  right: '-5px',
+                  background: '#2196f3',
+                  width: '10px',
+                  height: '10px',
+                  borderRadius: '50%',
+                  border: '2px solid rgba(20, 20, 30, 0.9)'
+                }}/>
+              )}
+              <span style={{ 
+                marginLeft: '5px', 
+                fontSize: '14px', 
+                color: '#aaa' 
+              }}>
+                ({player?.techPoints || 0})
+              </span>
+            </button>
             <div style={{
               color: timeRemaining <= WARNING_TIME ? '#ff4444' : '#fff',
               fontSize: '24px',
@@ -1053,6 +1090,13 @@ const GameGrid = () => {
           <CraftingPanel 
             player={player} 
             onClose={() => setIsCraftingOpen(false)}
+          />
+        )}
+
+        {isTechTreeOpen && player && (
+          <TechTree 
+            player={player} 
+            onClose={() => setIsTechTreeOpen(false)}
           />
         )}
       </div>
