@@ -1,5 +1,5 @@
 import { EquipmentSlot, EQUIPMENT_LIST } from './equipmentTypes';
-import playerImage from '../assets/images/player/player.png';
+
 
 export const EntityTypes = {
   WALL: 1,
@@ -37,7 +37,6 @@ const BASIC_PICKAXE = {
   type: EquipmentSlot.TOOL,
   stats: {
     mining: 1,
-    attack: 3
   },
   description: "A simple pickaxe for basic mining",
   tier: 0
@@ -45,13 +44,13 @@ const BASIC_PICKAXE = {
 
 export class Player extends Character {
   constructor(x, y) {
-    super(x, y, EntityTypes.PLAYER, 100, 10);
+    super(x, y, EntityTypes.PLAYER, 50, 2);
     this.level = 1;
     this.experience = 0;
     this.experienceToNextLevel = 100;
-    this.maxHp = 100;
-    this.currentHp = 100;
-    this.attack = 10;
+    this.maxHp = 50;
+    this.currentHp = 50;
+    this.attack = 2;
     this.defense = 0;
     this.inventory = {
       stone: 0,
@@ -67,7 +66,7 @@ export class Player extends Character {
       chest: null,
       legs: null,
       feet: null,
-      tool: null
+      tool: BASIC_PICKAXE  // Start with basic pickaxe equipped
     };
     this.bag = [];
     this.bagSize = 10;
@@ -75,6 +74,10 @@ export class Player extends Character {
     // Add tech-related properties
     this.techPoints = 0;
     this.technologies = [];
+
+    // Update initial stats with equipped pickaxe
+    const stats = this.getTotalStats();
+    this.attack = stats.attack;
   }
 
   levelUp() {

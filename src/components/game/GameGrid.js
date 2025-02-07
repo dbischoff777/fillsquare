@@ -15,6 +15,7 @@ import BagPanel from './BagPanel';
 import { CombatManager } from '../../utils/combatManager';
 import { getAvailableRecipes } from '../../utils/craftingRecipes';
 import TechTree from './TechTree';
+import playerImage from '../../assets/images/player/player.png';
 
 const LEVEL_TIME_LIMIT = 300; // 5 minutes in seconds
 const WARNING_TIME = 60; // 1 minute in seconds
@@ -925,15 +926,15 @@ const GameGrid = () => {
                   backgroundColor: '#222'
                 }}>
                   {combatEnemy.image ? (
-                    <img 
+                  <img 
                       src={combatEnemy.image.src} 
                       alt={combatEnemy.name}
-                      style={{
+                    style={{
                         width: '100%',
                         height: '100%',
                         objectFit: 'contain'
-                      }}
-                    />
+                    }}
+                  />
                   ) : (
                     <div style={{
                       width: '100%',
@@ -946,9 +947,9 @@ const GameGrid = () => {
                   <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
                     {combatEnemy.name}
                   </div>
-                  <div>
+                <div>
                     HP: {combatEnemy.currentHp}/{combatEnemy.maxHp}
-                    <div style={{
+                  <div style={{
                       width: '100px',
                       height: '8px',
                       backgroundColor: '#333',
@@ -959,12 +960,12 @@ const GameGrid = () => {
                       <div style={{
                         width: `${(combatEnemy.currentHp / combatEnemy.maxHp) * 100}%`,
                         height: '100%',
-                        backgroundColor: '#ff4444',
+                    backgroundColor: '#ff4444',
                         transition: 'width 0.3s'
                       }}/>
-                    </div>
-                  </div>
                 </div>
+              </div>
+            </div>
               </div>
 
               {/* Player info */}
@@ -1008,11 +1009,11 @@ const GameGrid = () => {
                   overflow: 'hidden',
                   backgroundColor: '#222'
                 }}>
-                  {player?.image ? (
+                  {playerImage ? (
                     <img 
-                      src={player.image} 
+                      src={playerImage} 
                       alt="Player"
-                      style={{
+                style={{
                         width: '100%',
                         height: '100%',
                         objectFit: 'contain'
@@ -1043,23 +1044,23 @@ const GameGrid = () => {
                 justifyContent: 'center',
                 marginTop: '10px' 
               }}>
-                <button
-                  onClick={handleLimitBreak}
-                  style={{
+              <button
+                onClick={handleLimitBreak}
+                style={{
                     backgroundColor: '#ff0000',
                     color: '#fff',
-                    border: 'none',
-                    borderRadius: '4px',
+                  border: 'none',
+                  borderRadius: '4px',
                     padding: '8px 16px',
-                    cursor: 'pointer',
+                  cursor: 'pointer',
                     fontSize: '14px',
                     fontWeight: 'bold',
                     animation: 'pulse 1s infinite',
                     textTransform: 'uppercase'
-                  }}
-                >
-                  Limit Break!
-                </button>
+                }}
+              >
+                Limit Break!
+              </button>
               </div>
             )}
             
