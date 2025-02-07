@@ -1,5 +1,6 @@
 import { EquipmentSlot, EQUIPMENT_LIST } from './equipmentTypes';
 import playerImage from '../assets/images/player/player.png';
+import { CRAFTING_RECIPES } from './craftingRecipes';
 
 export const EntityTypes = {
   WALL: 1,
@@ -31,29 +32,40 @@ export class Character extends Entity {
   }
 }
 
+// Define the basic pickaxe
+const BASIC_PICKAXE = {
+  name: "Basic Pickaxe",
+  type: EquipmentSlot.TOOL,
+  stats: {
+    mining: 1,
+    attack: 3
+  },
+  description: "A simple pickaxe for basic mining",
+  tier: 0
+};
+
 export class Player extends Character {
   constructor(x, y) {
-    super(x, y, EntityTypes.PLAYER, 20, 2);
+    super(x, y, EntityTypes.PLAYER, 100, 10); // Base HP: 100, Base Attack: 10
+    this.baseStats = {
+      attack: 10,
+      defense: 5,
+      hp: 100,
+      maxHp: 100,
+      mining: 1
+    };
     this.defense = 1;
     this.level = 1;
     this.experience = 0;
     this.experienceToNextLevel = 100;
+    
+    // Initialize equipment slots
     this.equipment = {
       [EquipmentSlot.MAIN_HAND]: null,
-      [EquipmentSlot.OFF_HAND]: null,
-      [EquipmentSlot.TOOL]: {  // Start with basic pickaxe
-        name: "Basic Pickaxe",
-        type: EquipmentSlot.TOOL,
-        stats: {
-          mining: 1,
-          attack: 5,
-          hp: 5
-        }
-      },
-      [EquipmentSlot.HELMET]: null,
-      [EquipmentSlot.BOOTS]: null,
-      [EquipmentSlot.GLOVES]: null
+      [EquipmentSlot.ARMOR]: null,
+      [EquipmentSlot.TOOL]: BASIC_PICKAXE
     };
+    
     this.inventory = {
       stone: 0,
       coal: 0,
@@ -65,6 +77,65 @@ export class Player extends Character {
     this.bag = [];  // Array to store unequipped items
     this.bagSize = 10;  // Maximum number of items in bag
     this.image = playerImage;
+    
+    // Initialize HP after equipment is set
+    this.currentHp = this.getTotalStats().maxHp;
+  }
+
+  getTotalStats() {
+    // Start with base stats
+    const totalStats = { ...this.baseStats };
+
+    // Add equipment bonuses from all slots
+    Object.values(this.equipment).forEach(item => {
+      if (item?.stats) {
+        Object.entries(item.stats).forEach(([stat, value]) => {
+          if (stat === 'hp') {
+            totalStats.hp += value;
+            totalStats.maxHp += value;
+          } else {
+            totalStats[stat] = (totalStats[stat] || 0) + value;
+          }
+        });
+      }
+    });
+
+    return totalStats;
+  }
+
+  equip(item) {
+    // Store the item in its appropriate slot
+    this.equipment[item.type] = item;
+
+    // Update current HP proportionally when max HP changes
+    const newStats = this.getTotalStats();
+    const hpPercentage = this.currentHp / this.baseStats.maxHp;
+    this.currentHp = Math.floor(newStats.maxHp * hpPercentage);
+    
+    // Update attack and defense stats
+    this.attack = newStats.attack;
+    this.defense = newStats.defense;
+  }
+
+  unequip(itemType) {
+    this.equipment[itemType] = null;
+    
+    // Update stats after unequipping
+    const newStats = this.getTotalStats();
+    const hpPercentage = this.currentHp / this.baseStats.maxHp;
+    this.currentHp = Math.floor(newStats.maxHp * hpPercentage);
+    this.attack = newStats.attack;
+    this.defense = newStats.defense;
+  }
+
+  getEquippedItem(slot) {
+    return this.equipment[slot];
+  }
+
+  takeDamage(amount) {
+    const reducedDamage = Math.max(1, amount - this.defense);
+    this.currentHp = Math.max(0, this.currentHp - reducedDamage);
+    return this.currentHp <= 0;
   }
 
   gainExperience(amount) {
@@ -78,35 +149,28 @@ export class Player extends Character {
     this.level += 1;
     this.experience -= this.experienceToNextLevel;
     this.experienceToNextLevel = Math.floor(this.experienceToNextLevel * 1.5);
-    this.maxHp += 2;
-    this.currentHp = this.maxHp;
-    this.attack += 1;
-  }
-
-  equip(item) {
-    this.equipment[item.slot] = item;
-    this.updateStats();
-  }
-
-  unequip(slot) {
-    this.equipment[slot] = null;
-    this.updateStats();
-  }
-
-  updateStats() {
-    // Reset base stats
-    this.attack = 6;
     
-    // Add equipment bonuses
-    Object.values(this.equipment).forEach(item => {
-      if (item) {
-        if (item.stats.attack) this.attack += item.stats.attack;
-      }
-    });
+    // Increase base stats
+    this.baseStats.maxHp += 20;
+    this.baseStats.hp += 20;
+    this.baseStats.attack += 5;
+    this.baseStats.defense += 2;
+    
+    // Update current stats
+    const newStats = this.getTotalStats();
+    this.currentHp = newStats.maxHp; // Full heal on level up
+    this.attack = newStats.attack;
+    this.defense = newStats.defense;
+  }
+
+  getMiningPower() {
+    const stats = this.getTotalStats();
+    return stats.mining || 1;
   }
 
   hasPickaxeEquipped() {
-    return this.equipment[EquipmentSlot.TOOL]?.name.includes('Pickaxe');
+    const tool = this.equipment[EquipmentSlot.TOOL];
+    return tool && tool.name.includes('Pickaxe');
   }
 
   collectOre(oreType) {
@@ -114,7 +178,6 @@ export class Player extends Character {
     this.inventory[oreName]++;
   }
 
-  // Add method to salvage items
   salvageItem(itemIndex) {
     const item = this.bag[itemIndex];
     if (!item) return false;
