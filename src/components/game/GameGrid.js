@@ -263,8 +263,11 @@ const GameGrid = () => {
       return;
     }
 
+    // Get all enemies (including spawned ones)
+    const allEnemies = [...enemies, ...enemySpawner.getEnemies()];
+
     // Regular movement and combat initiation
-    const enemyAtPosition = enemies.find(e => e.x === newX && e.y === newY);
+    const enemyAtPosition = allEnemies.find(e => e.x === newX && e.y === newY);
     if (enemyAtPosition) {
       setInCombat(true);
       setCombatEnemy(enemyAtPosition);
@@ -370,8 +373,8 @@ const GameGrid = () => {
         celebrateVictory();
       }
 
-      // Check for adjacent enemy
-      const adjacentEnemy = enemies.find(enemy => 
+      // Check for adjacent enemy (including spawned ones)
+      const adjacentEnemy = allEnemies.find(enemy => 
         Math.abs(enemy.x - (player.x + dx)) + Math.abs(enemy.y - (player.y + dy)) === 0
       );
 
