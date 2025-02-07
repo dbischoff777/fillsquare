@@ -16,7 +16,7 @@ export class CombatManager {
     console.log('CombatManager initialized with setEnemies:', typeof this.setEnemies);
   }
 
-  handleLimitBreak(player, combatEnemy, setLimitBreakReady, setAttackCount, setCombatTurn) {
+  handleLimitBreak(player, combatEnemy, setLimitBreakReady, setAttackCount, setCombatTurn, setInCombat, setCombatEnemy) {
     if (!combatEnemy) return;
 
     // Deal massive damage (3x normal damage + level bonus)
@@ -33,7 +33,7 @@ export class CombatManager {
     
     // Check if enemy died
     if (combatEnemy.currentHp <= 0) {
-      this.handleEnemyDeath(combatEnemy);
+      this.handleEnemyDeath(combatEnemy, setInCombat, setCombatEnemy, setAttackCount, setLimitBreakReady);
     } else {
       setCombatTurn('enemy');
     }
