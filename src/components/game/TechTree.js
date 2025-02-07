@@ -1,7 +1,22 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { TECH_TREE, TECH_CATEGORIES } from '../../utils/techTreeData';
 
 const TechTree = ({ player, onClose }) => {
+  const panelRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (panelRef.current && !panelRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
+
   if (!player) return null;
 
   const canResearch = (tech) => {
@@ -94,45 +109,52 @@ const TechTree = ({ player, onClose }) => {
   return (
     <div style={{
       position: 'fixed',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      backgroundColor: 'rgba(20, 20, 30, 0.95)',
-      padding: '20px',
-      borderRadius: '8px',
-      border: '2px solid #30475e',
-      color: '#fff',
-      width: '80%',
-      maxWidth: '1000px',
-      maxHeight: '80vh',
-      overflowY: 'auto',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
       zIndex: 1000
     }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '20px',
-        borderBottom: '1px solid #30475e',
-        paddingBottom: '10px'
+      <div ref={panelRef} style={{
+        backgroundColor: 'rgba(20, 20, 30, 0.95)',
+        padding: '20px',
+        borderRadius: '8px',
+        border: '2px solid #30475e',
+        color: '#fff',
+        width: '80%',
+        maxWidth: '1000px',
+        maxHeight: '80vh',
+        overflowY: 'auto'
       }}>
-        <h2 style={{ margin: 0 }}>Technology Tree (Points: {player.techPoints})</h2>
-        <button 
-          onClick={onClose}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#fff',
-            fontSize: '24px',
-            cursor: 'pointer',
-            padding: '5px 10px'
-          }}
-        >
-          ×
-        </button>
-      </div>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '20px',
+          borderBottom: '1px solid #30475e',
+          paddingBottom: '10px'
+        }}>
+          <h2 style={{ margin: 0 }}>Technology Tree (Points: {player.techPoints})</h2>
+          <button 
+            onClick={onClose}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#fff',
+              fontSize: '24px',
+              cursor: 'pointer',
+              padding: '5px 10px'
+            }}
+          >
+            ×
+          </button>
+        </div>
 
-      {Object.values(TECH_CATEGORIES).map(category => renderTechCategory(category))}
+        {Object.values(TECH_CATEGORIES).map(category => renderTechCategory(category))}
+      </div>
     </div>
   );
 };
