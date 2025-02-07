@@ -680,17 +680,6 @@ const GameGrid = () => {
     setTouchStart(null);
   };
 
-  const handleEscape = useCallback(() => {
-    combatManager.handleEscape(
-      player,
-      combatEnemy,
-      handlePlayerDeath,
-      setInCombat,
-      setCombatEnemy,
-      setCombatTurn
-    );
-  }, [player, combatEnemy, handlePlayerDeath]);
-
   const handleCraft = (recipe) => {
     const craftedItem = {
       name: recipe.name,
@@ -740,7 +729,8 @@ const GameGrid = () => {
       <div style={{ 
         display: 'flex', 
         flexDirection: 'column', 
-        alignItems: 'center'
+        alignItems: 'center',
+        position: 'relative'  // Add relative positioning to the container
       }}>
         <div style={{
           display: 'flex',
@@ -776,11 +766,199 @@ const GameGrid = () => {
             border: '1px solid #30475e',
             borderRadius: '8px',
             boxShadow: '0 4px 6px rgba(0, 0, 0, 0.2)',
-            marginBottom: '10px'
+            marginBottom: '10px',
+            position: 'relative'  // Add relative positioning to the canvas
           }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         />
+
+        {/* Combat UI - Moved inside the canvas container */}
+        {inCombat && combatEnemy && (
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            padding: '20px',
+            borderRadius: '12px',
+            color: '#fff',
+            textAlign: 'center',
+            minWidth: '400px',
+            border: '2px solid #444',
+            boxShadow: '0 0 20px rgba(0,0,0,0.5)',
+            zIndex: 1000
+          }}>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '15px'
+            }}>
+              {/* Enemy info with image */}
+              <div style={{ 
+                display: 'flex',
+                alignItems: 'center',
+                gap: '15px'
+              }}>
+                <div style={{
+                  width: '64px',
+                  height: '64px',
+                  border: '2px solid #666',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  backgroundColor: '#222'
+                }}>
+                  {combatEnemy.image ? (
+                    <img 
+                      src={combatEnemy.image.src} 
+                      alt={combatEnemy.name}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain'
+                      }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: '100%',
+                      height: '100%',
+                      backgroundColor: combatEnemy.color
+                    }} />
+                  )}
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                    {combatEnemy.name}
+                  </div>
+                  <div>
+                    HP: {combatEnemy.currentHp}/{combatEnemy.maxHp}
+                    <div style={{
+                      width: '100px',
+                      height: '8px',
+                      backgroundColor: '#333',
+                      borderRadius: '4px',
+                      overflow: 'hidden',
+                      marginTop: '4px'
+                    }}>
+                      <div style={{
+                        width: `${(combatEnemy.currentHp / combatEnemy.maxHp) * 100}%`,
+                        height: '100%',
+                        backgroundColor: '#ff4444',
+                        transition: 'width 0.3s'
+                      }}/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Player info */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '15px'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-end'
+                }}>
+                  <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                    Player
+                  </div>
+                  <div>
+                    HP: {player?.currentHp}/{player?.maxHp}
+                    <div style={{
+                      width: '100px',
+                      height: '8px',
+                      backgroundColor: '#333',
+                      borderRadius: '4px',
+                      overflow: 'hidden'
+                    }}>
+                      <div style={{
+                        width: `${(player?.currentHp / player?.maxHp) * 100}%`,
+                        height: '100%',
+                        backgroundColor: '#44ff44',
+                        transition: 'width 0.3s'
+                      }}/>
+                    </div>
+                  </div>
+                  <div>Attack: {player?.attack}</div>
+                </div>
+                <div style={{
+                  width: '64px',
+                  height: '64px',
+                  border: '2px solid #666',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  backgroundColor: '#222'
+                }}>
+                  {player?.image ? (
+                    <img 
+                      src={player.image} 
+                      alt="Player"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain'
+                      }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: '100%',
+                      height: '100%',
+                      backgroundColor: '#4444ff'
+                    }} />
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              {combatTurn === 'player' ? 
+                'Your turn - Move into enemy to attack' : 
+                'Enemy turn...'}
+            </div>
+
+            {/* Combat buttons - Only show Limit Break when available */}
+            {combatTurn === 'player' && limitBreakReady && (
+              <div style={{ 
+                display: 'flex', 
+                gap: '10px', 
+                justifyContent: 'center',
+                marginTop: '10px' 
+              }}>
+                <button
+                  onClick={handleLimitBreak}
+                  style={{
+                    backgroundColor: '#ff0000',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '8px 16px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    animation: 'pulse 1s infinite',
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  Limit Break!
+                </button>
+              </div>
+            )}
+            
+            {/* Attack counter display */}
+            <div style={{
+              marginTop: '5px',
+              fontSize: '12px',
+              color: '#aaa'
+            }}>
+              Attacks: {attackCount}/{ATTACKS_FOR_LIMIT}
+            </div>
+          </div>
+        )}
 
         <FeedbackBanner 
           messages={feedbackMessages} 
@@ -848,205 +1026,6 @@ const GameGrid = () => {
           >
             Try Again
           </button>
-        </div>
-      )}
-      {/* Combat UI */}
-      {inCombat && combatEnemy && (
-        <div style={{
-          position: 'absolute',
-          bottom: '20px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          padding: '15px',
-          borderRadius: '8px',
-          color: '#fff',
-          textAlign: 'center',
-          minWidth: '300px'
-        }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '15px'
-          }}>
-            {/* Enemy info with image */}
-            <div style={{ 
-              display: 'flex',
-              alignItems: 'center',
-              gap: '15px'
-            }}>
-              <div style={{
-                width: '64px',
-                height: '64px',
-                border: '2px solid #666',
-                borderRadius: '8px',
-                overflow: 'hidden',
-                backgroundColor: '#222'
-              }}>
-                {combatEnemy.image ? (
-                  <img 
-                    src={combatEnemy.image.src} 
-                    alt={combatEnemy.name}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'contain'
-                    }}
-                  />
-                ) : (
-                  <div style={{
-                    width: '100%',
-                    height: '100%',
-                    backgroundColor: combatEnemy.color
-                  }} />
-                )}
-              </div>
-              <div style={{ textAlign: 'left' }}>
-                <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                  {combatEnemy.name}
-                </div>
-                <div>
-                  HP: {combatEnemy.currentHp}/{combatEnemy.maxHp}
-                  <div style={{
-                    width: '100px',
-                    height: '8px',
-                    backgroundColor: '#333',
-                    borderRadius: '4px',
-                    overflow: 'hidden',
-                    marginTop: '4px'
-                  }}>
-                    <div style={{
-                      width: `${(combatEnemy.currentHp / combatEnemy.maxHp) * 100}%`,
-                      height: '100%',
-                      backgroundColor: '#ff4444',
-                      transition: 'width 0.3s'
-                    }}/>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Player info */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '15px'
-            }}>
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-end'
-              }}>
-                <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                  Player
-                </div>
-                <div>
-                  HP: {player?.currentHp}/{player?.maxHp}
-                  <div style={{
-                    width: '100px',
-                    height: '8px',
-                    backgroundColor: '#333',
-                    borderRadius: '4px',
-                    overflow: 'hidden'
-                  }}>
-                    <div style={{
-                      width: `${(player?.currentHp / player?.maxHp) * 100}%`,
-                      height: '100%',
-                      backgroundColor: '#44ff44',
-                      transition: 'width 0.3s'
-                    }}/>
-                  </div>
-                </div>
-                <div>Attack: {player?.attack}</div>
-              </div>
-              <div style={{
-                width: '64px',
-                height: '64px',
-                border: '2px solid #666',
-                borderRadius: '8px',
-                overflow: 'hidden',
-                backgroundColor: '#222'
-              }}>
-                {player?.image ? (
-                  <img 
-                    src={player.image} 
-                    alt="Player"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'contain'
-                    }}
-                  />
-                ) : (
-                  <div style={{
-                    width: '100%',
-                    height: '100%',
-                    backgroundColor: '#4444ff'
-                  }} />
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ marginBottom: '10px' }}>
-            {combatTurn === 'player' ? 
-              'Your turn - Move into enemy to attack' : 
-              'Enemy turn...'}
-          </div>
-
-          {/* Combat buttons */}
-          {combatTurn === 'player' && (
-            <div style={{ 
-              display: 'flex', 
-              gap: '10px', 
-              justifyContent: 'center',
-              marginTop: '10px' 
-            }}>
-              {limitBreakReady && (
-                <button
-                  onClick={handleLimitBreak}
-                  style={{
-                    backgroundColor: '#ff0000',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '4px',
-                    padding: '8px 16px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    animation: 'pulse 1s infinite',
-                    textTransform: 'uppercase'
-                  }}
-                >
-                  Limit Break!
-                </button>
-              )}
-              <button
-                onClick={handleEscape}
-                style={{
-                  backgroundColor: '#ff4444',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '4px',
-                  padding: '8px 16px',
-                  cursor: 'pointer',
-                  fontSize: '14px'
-                }}
-              >
-                Try to Escape (50% chance)
-              </button>
-            </div>
-          )}
-          
-          {/* Attack counter display */}
-          <div style={{
-            marginTop: '5px',
-            fontSize: '12px',
-            color: '#aaa'
-          }}>
-            Attacks: {attackCount}/{ATTACKS_FOR_LIMIT}
-          </div>
         </div>
       )}
     </div>
