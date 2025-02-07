@@ -105,8 +105,8 @@ export class CombatManager {
     this.setEnemies(prevEnemies => {
       console.log('Previous enemies:', prevEnemies);
       // Check if it's a spawned enemy
-      const isSpawnedEnemy = !prevEnemies.some(e => 
-        e.x === enemy.x && e.y === enemy.y
+      const isSpawnedEnemy = enemySpawner.getEnemies().find(e => 
+        e === enemy  // Direct reference comparison instead of coordinate comparison
       );
       
       if (isSpawnedEnemy) {
@@ -115,9 +115,7 @@ export class CombatManager {
         return prevEnemies; // Return unchanged list
       } else {
         // Remove from regular enemies
-        const newEnemies = prevEnemies.filter(e => 
-          !(e.x === enemy.x && e.y === enemy.y)
-        );
+        const newEnemies = prevEnemies.filter(e => e !== enemy);  // Direct reference comparison
         console.log('Filtered enemies:', newEnemies);
         return newEnemies;
       }
