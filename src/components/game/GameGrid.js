@@ -161,7 +161,7 @@ const GameGrid = () => {
   }, [addFeedbackMessage, setPlayer, setDroppedItems]);
 
   const resetGame = () => {
-    const { maze: newMaze, enemies: newEnemies } = generateMaze(31, 31, player?.level || 1);
+    const { maze: newMaze, enemies: newEnemies } = generateMaze(41, 41, player?.level || 1);
     setMaze(newMaze);
     setEnemies(newEnemies);
     setPlayer(prev => {
@@ -582,9 +582,9 @@ const GameGrid = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     
-    const mazeWidth = 31;
-    const mazeHeight = 31;
-    const cellSize = 18;
+    const mazeWidth = 31;  // Increased from 31
+    const mazeHeight = 31; // Increased from 31
+    const cellSize = 32;
     canvas.width = mazeWidth * cellSize;
     canvas.height = mazeHeight * cellSize;
 

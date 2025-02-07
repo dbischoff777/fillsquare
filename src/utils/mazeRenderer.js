@@ -17,7 +17,7 @@ export const drawMaze = (
   droppedItems = new Map(),
   miningParticles = []
 ) => {
-  const cellSize = 18;
+  const cellSize = 32;
   const currentTime = performance.now();
   
   // Clear canvas
