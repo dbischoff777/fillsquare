@@ -30,7 +30,7 @@ const DangerMeter = () => {
 
   const getPhaseDescription = () => {
     if (timeRemaining <= CRITICAL_TIME) {
-      return "CRITICAL PHASE: Maximum difficulty with 2x rewards! Survive for epic loot! Reach the exit!";
+      return "CRITICAL PHASE: Maximum difficulty with 2x rewards! REACH THE EXIT!";
     } else if (timeRemaining <= WARNING_TIME) {
       return "WARNING PHASE: Difficulty increasing rapidly. Prepare for critical phase!";
     }
