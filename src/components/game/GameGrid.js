@@ -231,9 +231,15 @@ const GameGrid = () => {
         if (player.bag.length < player.bagSize) {
           player.bag.push(droppedItem.type);
           addFeedbackMessage(`Added ${droppedItem.type.name} to bag`, 'collect');
+          // Remove item from map
+          setDroppedItems(prev => {
+            const newMap = new Map(prev);
+            newMap.delete(itemKey);
+            return newMap;
+          });
         } else {
-          addFeedbackMessage('Bag is full!', 'warning');
-          return;
+          // If bag is full, just show message but allow movement
+          addFeedbackMessage('Bag is full! Item left behind', 'warning');
         }
       } else {
         // If it's an upgrade, equip it and put old item in bag if exists
@@ -242,14 +248,13 @@ const GameGrid = () => {
         }
         player.equipment[droppedItem.type.type] = droppedItem.type;
         addFeedbackMessage(`Equipped ${droppedItem.type.name}!`, 'collect');
+        // Remove item from map
+        setDroppedItems(prev => {
+          const newMap = new Map(prev);
+          newMap.delete(itemKey);
+          return newMap;
+        });
       }
-      
-      // Remove item from map
-      setDroppedItems(prev => {
-        const newMap = new Map(prev);
-        newMap.delete(itemKey);
-        return newMap;
-      });
     }
 
     const newAngle = Math.atan2(dy, dx) * (180 / Math.PI);
