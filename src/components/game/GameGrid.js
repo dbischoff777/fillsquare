@@ -505,6 +505,15 @@ const GameGrid = () => {
     }
   }, [gameOver, showLevelSummary, pauseTime, resumeTime]);
 
+  // Add effect to check time pressure
+  useEffect(() => {
+    if (timeRemaining <= 0 && !gameOver && !showLevelSummary) {
+      setGameOverReason('time');
+      setGameOver(true);
+      addFeedbackMessage('Time has run out!', 'damage');
+    }
+  }, [timeRemaining, gameOver, showLevelSummary]);
+
   const handleTouchStart = (e) => {
     const touch = e.touches[0];
     setTouchStart({ x: touch.clientX, y: touch.clientY });

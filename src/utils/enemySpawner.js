@@ -6,9 +6,9 @@ class EnemySpawner {
     this.spawnPoints = [];
     this.enemies = [];
     this.lastSpawnTime = 0;
-    this.baseSpawnInterval = 10000; // 10 seconds base interval
+    this.baseSpawnInterval = 6000; // 10 seconds base interval
     this.minSpawnInterval = 2000;   // Minimum 2 seconds between spawns
-    this.maxEnemies = 8;           // Maximum concurrent spawned enemies
+    this.maxEnemies = 12;           // Maximum concurrent spawned enemies
   }
 
   // Initialize spawn points based on maze layout

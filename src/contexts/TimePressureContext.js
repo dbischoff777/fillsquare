@@ -13,9 +13,9 @@ export function TimePressureProvider({ children }) {
   useEffect(() => {
     // Update danger level based on time
     if (timeRemaining <= CRITICAL_TIME) {
-      setDangerLevel(2);
+      setDangerLevel(4);
     } else if (timeRemaining <= WARNING_TIME) {
-      setDangerLevel(1);
+      setDangerLevel(2);
     } else {
       setDangerLevel(0);
     }

@@ -1,6 +1,6 @@
 // Import only the rat image for now
 import ratImage from '../assets/images/enemies/rat.png';
-import spiderImage from '../assets/images/enemies/rat.png';
+import spiderImage from '../assets/images/enemies/spider.png';
 
 export const EnemyTypes = {
   RAT: {
