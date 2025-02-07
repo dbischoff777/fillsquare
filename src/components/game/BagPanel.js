@@ -41,12 +41,14 @@ const BagPanel = ({ player, onClose }) => {
   };
 
   return (
-    <div className="bag-panel">
+    <div className="bag-panel" style={{
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      zIndex: 1000
+    }}>
       <div style={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
         backgroundColor: 'rgba(20, 20, 30, 0.95)',
         padding: '20px',
         borderRadius: '8px',
@@ -55,8 +57,7 @@ const BagPanel = ({ player, onClose }) => {
         minWidth: '300px',
         maxWidth: '500px',
         maxHeight: '80vh',
-        overflowY: 'auto',
-        zIndex: 1000
+        overflowY: 'auto'
       }}>
         <div style={{
           display: 'flex',

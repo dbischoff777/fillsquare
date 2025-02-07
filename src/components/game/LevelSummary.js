@@ -1,6 +1,23 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const LevelSummary = ({ treasuresCollected, depth, onContinue }) => {
+  const [countdown, setCountdown] = useState(3);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown(prev => prev - 1);
+    }, 1000);
+
+    const autoContinue = setTimeout(() => {
+      onContinue();
+    }, 3000);
+
+    return () => {
+      clearInterval(timer);
+      clearTimeout(autoContinue);
+    };
+  }, [onContinue]);
+
   const modalStyle = {
     position: 'fixed',
     top: '50%',
@@ -45,6 +62,7 @@ const LevelSummary = ({ treasuresCollected, depth, onContinue }) => {
         <h2 style={{ color: '#f6c90e', marginTop: 0 }}>Depth {depth} Cleared!</h2>
         <div style={{ marginBottom: '20px' }}>
           <p>Treasures Collected: <span style={{ color: '#f6c90e' }}>{treasuresCollected}</span></p>
+          <p style={{ fontSize: '14px', color: '#888' }}>Continuing in {countdown} seconds...</p>
         </div>
         <button style={buttonStyle} onClick={onContinue}>
           Descend Deeper
