@@ -161,7 +161,10 @@ const GameGrid = () => {
   }, [addFeedbackMessage, setPlayer, setDroppedItems]);
 
   const resetGame = () => {
-    const { maze: newMaze, enemies: newEnemies } = generateMaze(41, 41, player?.level || 1);
+    const MAZE_WIDTH = 21;
+    const MAZE_HEIGHT = 21;
+    
+    const { maze: newMaze, enemies: newEnemies } = generateMaze(MAZE_WIDTH, MAZE_HEIGHT, player?.level || 1);
     setMaze(newMaze);
     setEnemies(newEnemies);
     setPlayer(prev => {
@@ -582,13 +585,16 @@ const GameGrid = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     
-    const mazeWidth = 21;  // Increased from 31
-    const mazeHeight = 21; // Increased from 31
-    const cellSize = 32;
-    canvas.width = mazeWidth * cellSize;
-    canvas.height = mazeHeight * cellSize;
+    // Define constant maze dimensions
+    const MAZE_WIDTH = 21;
+    const MAZE_HEIGHT = 21;
+    const CELL_SIZE = 32;
 
-    const { maze: newMaze, enemies: newEnemies } = generateMaze(mazeWidth, mazeHeight);
+    // Set fixed canvas size
+    canvas.width = MAZE_WIDTH * CELL_SIZE;
+    canvas.height = MAZE_HEIGHT * CELL_SIZE;
+
+    const { maze: newMaze, enemies: newEnemies } = generateMaze(MAZE_WIDTH, MAZE_HEIGHT);
     setMaze(newMaze);
     setEnemies(newEnemies);
     
@@ -596,7 +602,7 @@ const GameGrid = () => {
     const initialPlayer = new Player(1, 1);
     initialPlayer.currentHp = initialPlayer.maxHp;
     setPlayer(initialPlayer);
-  }, []); // Empty dependency array for initial setup only
+  }, []); 
 
   // Timer effect - completely independent from other game state
   useEffect(() => {
