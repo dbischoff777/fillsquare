@@ -50,7 +50,6 @@ const GameGrid = () => {
 
   // Initialize combat manager with useMemo and proper dependencies
   const combatManager = useMemo(() => {
-    console.log('Creating new CombatManager with setEnemies:', typeof setEnemies);
     const manager = new CombatManager(
       addFeedbackMessage,
       setPlayer,
@@ -61,7 +60,6 @@ const GameGrid = () => {
   }, []);  // Keep empty dependency array to maintain single instance
 
   const handlePlayerDeath = useCallback(() => {
-    console.log("Handling player death"); // Debug log
     setGameOverReason('death');
     setGameOver(true);
     addFeedbackMessage('You have been defeated!', 'damage');
@@ -611,12 +609,8 @@ const GameGrid = () => {
       return;
     }
 
-    console.log("Timer started"); // Debug log
-
     const intervalId = setInterval(() => {
       setTimeRemaining(prevTime => {
-        // Debug log
-        console.log("Current time:", prevTime);
         
         if (prevTime <= 0) {
           clearInterval(intervalId);
@@ -642,7 +636,6 @@ const GameGrid = () => {
 
     // Cleanup
     return () => {
-      console.log("Timer cleanup"); // Debug log
       clearInterval(intervalId);
     };
   }, [gameOver, showLevelSummary]); // Only depend on game state that should stop the timer

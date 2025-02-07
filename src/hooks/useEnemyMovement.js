@@ -32,7 +32,6 @@ export const useEnemyMovement = (
   // First useEffect for movement and combat initiation
   useEffect(() => {
     if (gameOver || showLevelSummary || inCombat || !enemies || !Array.isArray(enemies)) {
-      console.log('Movement effect - Clearing interval due to:', { gameOver, showLevelSummary, inCombat });
       clearInterval(moveInterval.current);
       return;
     }
@@ -68,7 +67,6 @@ export const useEnemyMovement = (
               );
               
               if (willCollide && !combatInitiated.current) {
-                console.log('Collision detected! Initiating combat...');
                 combatInitiated.current = true;
                 setInCombat(true);
                 setCombatEnemy(updatedEnemy);
