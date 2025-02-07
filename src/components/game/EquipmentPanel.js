@@ -59,13 +59,13 @@ const EquipmentPanel = ({ player }) => {
 
   // Filter and standardize equipment slots to show
   const equipmentSlots = {
-    mainHand: player.equipment.mainHand || player.equipment.mainhand,
-    offHand: player.equipment.offHand || player.equipment.offhand,
-    head: player.equipment.helmet || player.equipment.Helmet,
-    chest: player.equipment.chest || player.equipment.Chest,
-    feet: player.equipment.boots || player.equipment.Boots,
-    hands: player.equipment.gloves || player.equipment.Gloves,
-    tool: player.equipment.tool || player.equipment.Tool
+    mainHand: player.equipment.mainHand,
+    offHand: player.equipment.offHand,
+    head: player.equipment.helmet,
+    chest: player.equipment.chest,
+    feet: player.equipment.boots,
+    hands: player.equipment.gloves,
+    tool: player.equipment.tool,
   };
 
   // Debug log to see what slots we're displaying
@@ -83,7 +83,10 @@ const EquipmentPanel = ({ player }) => {
             return (
               <div key={slot} style={slotStyle}>
                 <div style={labelStyle}>
-                  {slot.replace(/([A-Z])/g, ' $1').toLowerCase().trim()}
+                  {slot.replace(/([A-Z])/g, ' $1')
+                      .toLowerCase()
+                      .trim()
+                      .replace(/(^\w|\s\w)/g, letter => letter.toUpperCase())}
                 </div>
                 <div style={valueStyle}>
                   {item ? item.name : '-'}
