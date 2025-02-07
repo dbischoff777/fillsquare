@@ -1,9 +1,14 @@
 import { OreTypes } from './oreTypes';
 import playerImage from '../assets/images/player/player.png';
+import chestImage from '../assets/images/objects/chest.png';
 
 // Create and load the player image
 const playerSprite = new Image();
 playerSprite.src = playerImage;
+
+// Create and load the chest image
+const chestSprite = new Image();
+chestSprite.src = chestImage;
 
 export const drawMaze = (
   ctx, 
@@ -66,38 +71,16 @@ const drawBackground = (ctx) => {
 };
 
 const drawTreasure = (ctx, x, y, cellSize, currentTime) => {
-  const glowAmount = Math.sin(currentTime / 1000) * 0.2 + 0.8;
-  
-  // Draw chest base
-  ctx.fillStyle = '#8B4513';
-  ctx.fillRect(
-    x * cellSize + cellSize * 0.2,
-    y * cellSize + cellSize * 0.3,
-    cellSize * 0.6,
-    cellSize * 0.5
-  );
-
-  // Draw chest lid
-  ctx.fillStyle = '#A0522D';
-  ctx.beginPath();
-  ctx.moveTo(x * cellSize + cellSize * 0.15, y * cellSize + cellSize * 0.3);
-  ctx.lineTo(x * cellSize + cellSize * 0.85, y * cellSize + cellSize * 0.3);
-  ctx.lineTo(x * cellSize + cellSize * 0.7, y * cellSize + cellSize * 0.15);
-  ctx.lineTo(x * cellSize + cellSize * 0.3, y * cellSize + cellSize * 0.15);
-  ctx.closePath();
-  ctx.fill();
-
-  // Draw glow effect
-  ctx.fillStyle = `rgba(255, 215, 0, ${glowAmount * 0.3})`;
-  ctx.beginPath();
-  ctx.arc(
-    x * cellSize + cellSize * 0.5,
-    y * cellSize + cellSize * 0.5,
-    cellSize * 0.4,
-    0,
-    Math.PI * 2
-  );
-  ctx.fill();
+  // Draw chest sprite only
+  if (chestSprite.complete) {
+    ctx.drawImage(
+      chestSprite,
+      x * cellSize + 2,
+      y * cellSize + 2,
+      cellSize - 4,
+      cellSize - 4
+    );
+  }
 };
 
 const drawHealthBar = (ctx, x, y, cellSize, currentHp, maxHp) => {
