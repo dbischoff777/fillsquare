@@ -12,6 +12,7 @@ import EquipmentPanel from './EquipmentPanel';
 import { EQUIPMENT_LIST, EquipmentSlot } from '../../utils/equipmentTypes';
 import CraftingPanel from './CraftingPanel';
 import BagPanel from './BagPanel';
+import { CombatManager } from '../../utils/combatManager';
 
 const LEVEL_TIME_LIMIT = 300; // 5 minutes in seconds
 const WARNING_TIME = 60; // 1 minute in seconds
@@ -47,6 +48,14 @@ const GameGrid = () => {
     setFeedbackMessages(prev => [...prev.slice(-2), { text, type, id: Date.now() }]);
   };
 
+  // Initialize combat manager
+  const combatManager = new CombatManager(
+    addFeedbackMessage,
+    setPlayer,
+    setDroppedItems,
+    setEnemies
+  );
+
   const handlePlayerDeath = useCallback(() => {
     console.log("Handling player death"); // Debug log
     setGameOverReason('death');
@@ -56,63 +65,28 @@ const GameGrid = () => {
 
   const handleLimitBreak = useCallback(() => {
     if (!limitBreakReady || !combatEnemy) return;
-
-    // Deal massive damage (3x normal damage + level bonus)
-    const baseDamage = player.attack * 3;
-    const levelBonus = player.level * 2;
-    const totalDamage = baseDamage + levelBonus;
-    
-    combatEnemy.currentHp -= totalDamage;
-    addFeedbackMessage(`LIMIT BREAK! Dealt ${totalDamage} damage!`, 'limit');
-    
-    // Reset limit break
-    setLimitBreakReady(false);
-    setAttackCount(0);
-    
-    // Check if enemy died
-    if (combatEnemy.currentHp <= 0) {
-      handleEnemyDeath(combatEnemy);
-    } else {
-      setCombatTurn('enemy');
-    }
-  }, [player, combatEnemy, addFeedbackMessage]);
+    combatManager.handleLimitBreak(
+      player,
+      combatEnemy,
+      setLimitBreakReady,
+      setAttackCount,
+      setCombatTurn
+    );
+  }, [player, combatEnemy, limitBreakReady]);
 
   const handleCombatTurn = useCallback((enemy) => {
-    if (combatTurn === 'player') {
-      // Player's turn
-      const { isDead, damage } = handleCombat(player, enemy);
-      addFeedbackMessage(`You attack! Dealt ${damage} damage!`, 'combat');
-      
-      // Increment attack counter and check for limit break
-      setAttackCount(prev => {
-        const newCount = prev + 1;
-        if (newCount >= ATTACKS_FOR_LIMIT) {
-          setLimitBreakReady(true);
-          addFeedbackMessage('Limit Break Ready!', 'limit');
-        }
-        return newCount;
-      });
-      
-      if (isDead) {
-        handleEnemyDeath(enemy);
-      } else {
-        setCombatTurn('enemy');
-        // Automatically trigger enemy turn after a short delay
-        setTimeout(() => {
-          // Enemy's turn
-          const damage = enemy.attack;
-          player.currentHp -= damage;
-          addFeedbackMessage(`${enemy.name} attacks! -${damage} HP`, 'damage');
-          
-          if (player.currentHp <= 0) {
-            handlePlayerDeath();
-          } else {
-            setCombatTurn('player');
-          }
-        }, 500); // Half second delay for better visual feedback
-      }
-    }
-  }, [player, combatTurn, handlePlayerDeath, addFeedbackMessage, setPlayer, setDroppedItems]);
+    combatManager.handleCombatTurn(
+      player,
+      enemy,
+      combatTurn,
+      handlePlayerDeath,
+      setAttackCount,
+      setLimitBreakReady,
+      setCombatTurn,
+      setInCombat,
+      setCombatEnemy
+    );
+  }, [player, combatTurn, handlePlayerDeath]);
 
   const handleEnemyDeath = useCallback((enemy) => {
     addFeedbackMessage('Enemy defeated!', 'combat');
@@ -698,26 +672,15 @@ const GameGrid = () => {
   };
 
   const handleEscape = useCallback(() => {
-    // 50% chance to escape successfully
-    if (Math.random() < 0.5) {
-      addFeedbackMessage('Escaped successfully!', 'info');
-      setInCombat(false);
-      setCombatEnemy(null);
-      setCombatTurn('player');
-    } else {
-      addFeedbackMessage('Failed to escape!', 'damage');
-      // Enemy gets a free attack
-      if (combatEnemy) {
-        const damage = combatEnemy.attack;
-        player.currentHp -= damage;
-        addFeedbackMessage(`${combatEnemy.name} attacks! -${damage} HP`, 'damage');
-        
-        if (player.currentHp <= 0) {
-          handlePlayerDeath();
-        }
-      }
-    }
-  }, [player, combatEnemy, addFeedbackMessage, handlePlayerDeath]);
+    combatManager.handleEscape(
+      player,
+      combatEnemy,
+      handlePlayerDeath,
+      setInCombat,
+      setCombatEnemy,
+      setCombatTurn
+    );
+  }, [player, combatEnemy, handlePlayerDeath]);
 
   const handleCraft = (recipe) => {
     const craftedItem = {
