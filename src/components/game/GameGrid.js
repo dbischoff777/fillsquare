@@ -13,6 +13,7 @@ import { EQUIPMENT_LIST, EquipmentSlot } from '../../utils/equipmentTypes';
 import CraftingPanel from './CraftingPanel';
 import BagPanel from './BagPanel';
 import { CombatManager } from '../../utils/combatManager';
+import { getAvailableRecipes } from '../../utils/craftingRecipes';
 
 const LEVEL_TIME_LIMIT = 300; // 5 minutes in seconds
 const WARNING_TIME = 60; // 1 minute in seconds
@@ -709,16 +710,12 @@ const GameGrid = () => {
     });
   };
 
-  // Function to handle opening the bag
-  const handleBagClick = () => {
-    if (player) {
-      setIsBagOpen(!isBagOpen);
-      // Remove any existing bag button state if it exists
-      if (player.bagOpen !== undefined) {
-        player.bagOpen = false;
-      }
-    }
-  };
+  // Check if there are items in the bag
+  const hasBagItems = player && player.bag.length > 0;
+  
+  // Check if any recipes are available to craft
+  const hasAvailableRecipes = player && getAvailableRecipes(player.inventory, player)
+    .some(recipe => recipe.status?.canCraft);
 
   return (
     <div style={{ 
@@ -742,7 +739,7 @@ const GameGrid = () => {
         display: 'flex', 
         flexDirection: 'column', 
         alignItems: 'center',
-        position: 'relative'
+        position: 'relative'  // Add relative positioning to the container
       }}>
         <div style={{
           display: 'flex',
@@ -766,7 +763,7 @@ const GameGrid = () => {
             gap: '10px'
           }}>
             <button
-              onClick={handleBagClick}
+              onClick={() => player && setIsBagOpen(!isBagOpen)}
               style={{
                 background: isBagOpen ? '#30475e' : 'rgba(20, 20, 30, 0.9)',
                 border: `2px solid ${isBagOpen ? '#4a6b8f' : '#30475e'}`,
@@ -775,10 +772,30 @@ const GameGrid = () => {
                 borderRadius: '6px',
                 cursor: 'pointer',
                 fontSize: '16px',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
+                position: 'relative'
               }}
             >
               Bag
+              {hasBagItems && (
+                <div style={{
+                  position: 'absolute',
+                  top: '-5px',
+                  right: '-5px',
+                  background: '#ff4444',
+                  width: '10px',
+                  height: '10px',
+                  borderRadius: '50%',
+                  border: '2px solid rgba(20, 20, 30, 0.9)'
+                }}/>
+              )}
+              <span style={{ 
+                marginLeft: '5px', 
+                fontSize: '14px', 
+                color: '#aaa' 
+              }}>
+                ({player?.bag.length || 0}/{player?.bagSize || 0})
+              </span>
             </button>
             <button
               onClick={() => setIsCraftingOpen(!isCraftingOpen)}
@@ -790,10 +807,23 @@ const GameGrid = () => {
                 borderRadius: '6px',
                 cursor: 'pointer',
                 fontSize: '16px',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s ease',
+                position: 'relative'
               }}
             >
               Craft
+              {hasAvailableRecipes && (
+                <div style={{
+                  position: 'absolute',
+                  top: '-5px',
+                  right: '-5px',
+                  background: '#4caf50',
+                  width: '10px',
+                  height: '10px',
+                  borderRadius: '50%',
+                  border: '2px solid rgba(20, 20, 30, 0.9)'
+                }}/>
+              )}
             </button>
             <div style={{
               color: timeRemaining <= WARNING_TIME ? '#ff4444' : '#fff',
@@ -814,7 +844,7 @@ const GameGrid = () => {
             borderRadius: '8px',
             boxShadow: '0 4px 6px rgba(0, 0, 0, 0.2)',
             marginBottom: '10px',
-            position: 'relative'
+            position: 'relative'  // Add relative positioning to the canvas
           }}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
