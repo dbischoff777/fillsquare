@@ -30,7 +30,7 @@ const PlayerStats = ({ player, treasuresCollected, depth }) => {
   };
 
   const barStyle = (value, max, color) => ({
-    width: `${(value / max) * 100}%`,
+    width: `${Math.min((value / max) * 100, 100)}%`,
     height: '100%',
     backgroundColor: color,
     transition: 'width 0.3s ease-in-out'
@@ -57,7 +57,9 @@ const PlayerStats = ({ player, treasuresCollected, depth }) => {
         <div style={barContainerStyle}>
           <div style={barStyle(player.experience, player.experienceToNextLevel, '#44ff44')} />
         </div>
-        <div style={valueStyle}>{player.experience} / {player.experienceToNextLevel}</div>
+        <div style={valueStyle}>
+          {Math.min(player.experience, player.experienceToNextLevel)} / {player.experienceToNextLevel}
+        </div>
       </div>
 
       <div style={statBlockStyle}>
